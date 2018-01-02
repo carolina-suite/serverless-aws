@@ -1,0 +1,17 @@
+extends ./base.pug
+
+block body
+  
+  include ./navbar.pug
+  
+  main(role="main")
+    .container
+      
+      h1.display-3= site.name
+      
+      .alert.alert-danger
+        p
+          b Oh No!
+          |  Whatever you were looking for was not found!
+      p
+        a.btn.btn-primary.btn-lg(href="/") Site Home &raquo;

@@ -1,0 +1,20 @@
+
+modelName: User
+keyField: username
+fields:
+  username:
+    type: String
+    required: true
+    unique: true
+  password:
+    type: String
+  salt:
+    type: String
+  name:
+    type: String
+  emailAddress:
+    type: EmailAddress
+    unique: true
+  isAdmin:
+    type: Boolean
+    default: false

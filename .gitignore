@@ -1,0 +1,9 @@
+
+**/node_modules/
+
+# don't ignore .state if you want to manage from multiple locations
+.state
+
+# you should always ignore these temp folders
+.fixtures
+.prerender

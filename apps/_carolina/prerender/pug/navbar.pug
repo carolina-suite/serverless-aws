@@ -1,0 +1,19 @@
+
+nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
+  
+  .container
+    a.navbar-brand(href="/")= site.name
+    
+    ul.ml-auto.navbar-nav
+      each item in site.mainMenu
+        if item.isDropdown
+          li.dropdown.nav-item
+            
+            a.dropdown-toggle.nav-link(data-toggle="dropdown" href="#")= item.title
+            
+            .dropdown-menu
+              each subitem in item.menu
+                a.dropdown-item(href=subitem.link)= subitem.title
+        else
+          li.nav-item
+            a.nav-link(href=item.link)= item.title
