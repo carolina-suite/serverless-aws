@@ -25,9 +25,11 @@ class CarolinaLib {
     this.AWS.config.update({
       region: config.awsRegion
     });
+
     this.DynamoDB = new this.AWS.DynamoDB({
       endpoint: this.dbEndpoint
     });
+    this.DocumentClient = new this.AWS.DynamoDB.DocumentClient();
     this.S3 = new this.AWS.S3();
 
     if (!fs.existsSync('.state')) {
@@ -117,6 +119,34 @@ class CarolinaLib {
           `.fixtures/${appName}`);
       }
     }
+  }
+
+  async putFixtureItem(item) {
+
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+
+      var model = yaml.load(`apps/${item.model.app}/models/${item.model.model}.yml`);
+      var itemParam = {};
+      var keyType = 'S';
+
+      if (model.fields[model.keyField].type == 'Number') keyType = 'N';
+
+      itemParam[model.keyField] = {};
+      itemParam[model.keyField][keyType] = item.fields[model.keyField];
+      itemParam['obj'] = { M: item.fields };
+
+      var params = {
+        TableName: `${self.config.slug}_${self.state.siteSuffix}_${item.model.app}_${item.model.model}`,
+        Item: itemParam
+      }
+
+      self.DynamoDB.putItem(params, function(err, data) {
+        if (err) reject(err);
+        else resolve(data);
+      });
+    });
   }
 
   async gatherPrerenderTemplates() {

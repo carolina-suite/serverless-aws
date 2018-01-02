@@ -5,5 +5,4 @@
 .state
 
 # you should always ignore these temp folders
-.fixtures
 .prerender

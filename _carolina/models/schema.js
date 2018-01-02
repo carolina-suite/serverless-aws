@@ -1,0 +1,7 @@
+
+class Schema {
+
+  constructor(schema) {
+    
+  }
+}
