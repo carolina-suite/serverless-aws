@@ -1,7 +1,10 @@
 
 class Field {
 
-  constructor(obj) {
+  constructor(obj, n) {
+
+    this.name = n;
+
     if (obj.hasOwnProperty('required')) this.required = obj.required;
     else this.required = false;
     if (obj.hasOwnProperty('unique')) this.unique = obj.unique;
@@ -11,10 +14,16 @@ class Field {
 
 class StringField extends Field {
 
-  constructor(obj) {
-    super(obj);
+  constructor(obj, n) {
+    super(obj, n);
   }
 
+  toAttributeDefinition() {
+    return {
+      AttributeName: this.name,
+      AttributeType: 'S'
+    }
+  }
   toInsertObj(v) {
     return { S: String(v) };
   }
@@ -22,8 +31,8 @@ class StringField extends Field {
 
 class EmailAddressField extends StringField {
 
-  constructor(obj) {
-    super(obj);
+  constructor(obj, n) {
+    super(obj, n);
   }
 
   toInsertObj(v) {
@@ -33,10 +42,16 @@ class EmailAddressField extends StringField {
 
 class BooleanField extends Field {
 
-  consructor(obj) {
-    super(obj);
+  constructor(obj, n) {
+    super(obj, n);
   }
 
+  toAttributeDefinition() {
+    return {
+      AttributeName: this.name,
+      AttributeType: 'BOOL'
+    }
+  }
   toInsertObj(v) {
     return { BOOL: Boolean(v) };
   }

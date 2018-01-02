@@ -58,7 +58,7 @@ var users = [
 
 for (var i = 0; i < users.length; ++i) {
   users[i].fields.salt = crypto.randomBytes(32).toString('hex');
-  users[i].password = crypto.pbkdf2Sync(users[i].fields.password, users[i].fields.salt,
+  users[i].fields.password = crypto.pbkdf2Sync(users[i].fields.password, users[i].fields.salt,
     1000, 64, 'sha512').toString('hex');
   users[i].model = userModel;
 }

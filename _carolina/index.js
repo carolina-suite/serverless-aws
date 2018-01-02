@@ -9,6 +9,8 @@ var yaml = require('yamljs');
 var newState = require('./lib/new-state');
 var walk = require('./lib/walk');
 
+var Schema = require('./models/schema');
+
 class CarolinaLib {
 
   constructor(config) {
@@ -75,34 +77,20 @@ class CarolinaLib {
 
           var tableName = `${self.config.slug}_${self.state.siteSuffix}_${appName}_${modelName}`;
           var modelConfig = yaml.load(fpath);
-          var keyType = null;
-
-          if (modelConfig.fields[modelConfig.keyField].type == 'String') {
-            keyType = 'S'
-          }
-          else if (modelConfig.fields[modelConfig.keyField].type == 'Number') {
-            keyType = 'N';
-          }
-          else {
-            throw "Invalid type for key field. Must be String or Number."
-          }
-
+          var modelSchema = new Schema(modelConfig);
           var params = {
             TableName: tableName,
-            KeySchema: [
-              { AttributeName: modelConfig.keyField, KeyType: 'HASH' }
-            ],
-            AttributeDefinitions: [
-              { AttributeName: modelConfig.keyField, AttributeType: keyType }
-            ],
+            KeySchema: modelSchema.toKeySchema(),
+            AttributeDefinitions: modelSchema.toAttributeDefinitions(),
             ProvisionedThroughput: {
               ReadCapacityUnits: 10,
               WriteCapacityUnits: 10
             }
           };
 
+          console.log(params)
           await self.createTable(params);
-          self.state.createTables.push(modelName);
+          self.state.createdTables.push(modelName);
         });
       }
     }
@@ -128,18 +116,15 @@ class CarolinaLib {
     return new Promise(function(resolve, reject) {
 
       var model = yaml.load(`apps/${item.model.app}/models/${item.model.model}.yml`);
+      var schema = new Schema(model);
       var itemParam = {};
       var keyType = 'S';
 
       if (model.fields[model.keyField].type == 'Number') keyType = 'N';
 
-      itemParam[model.keyField] = {};
-      itemParam[model.keyField][keyType] = item.fields[model.keyField];
-      itemParam['obj'] = { M: item.fields };
-
       var params = {
         TableName: `${self.config.slug}_${self.state.siteSuffix}_${item.model.app}_${item.model.model}`,
-        Item: itemParam
+        Item: schema.toInsertObj(item.fields)
       }
 
       self.DynamoDB.putItem(params, function(err, data) {
