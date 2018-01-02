@@ -35,11 +35,18 @@ you want to use in your configuration.
 
 Run
 
-`node deploy`
+```
+node build
+node deploy
+node fixture auth/test-users # this loads test users
+```
 
 The plan is for this command to put everything in its place and wire it
 all together. It should give you an S3 Bucket URL that you can go to
 to see your site.
+
+A set of test users will be installed if you ran the fixture command. It will
+include an "admin" user with the password "admin123".
 
 ## Docs #
 

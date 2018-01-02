@@ -11,3 +11,4 @@
   * [Public Files](./PUBLIC.md)
   * [Private Files](./PRIVATE.md)
   * [Webpack](./WEBPACK.md)
+* [Fixtures](./FIXTURES.md)
