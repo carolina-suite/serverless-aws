@@ -1,12 +1,14 @@
 
 var path = require('path');
 
+var archiver = require('archiver');
 var fs = require('fs-extra');
 var mime = require('mime-types');
 var pug = require('pug');
 var yaml = require('yamljs');
 
 var newState = require('./lib/new-state');
+var AwsRoles = require('./aws/roles');
 var walk = require('./lib/walk');
 
 var Schema = require('./models/schema');
@@ -28,10 +30,13 @@ class CarolinaLib {
       region: config.awsRegion
     });
 
+    this.APIGateway = new this.AWS.APIGateway();
     this.DynamoDB = new this.AWS.DynamoDB({
       endpoint: this.dbEndpoint
     });
     this.DocumentClient = new this.AWS.DynamoDB.DocumentClient();
+    this.IAM = new this.AWS.IAM();
+    this.Lambda = new this.AWS.Lambda();
     this.S3 = new this.AWS.S3();
 
     if (!fs.existsSync('.state')) {
@@ -44,6 +49,8 @@ class CarolinaLib {
     this.publicBucketName = `${this.config.slug}-${this.state.siteSuffix}-public`;
     this.privateBucketName = `${this.config.slug}-${this.state.siteSuffix}-private`;
     this.publicUrl = `http://${this.publicBucketName}.s3-website-${this.config.awsRegion}.amazonaws.com`;
+    this.masterRoleName = `${this.config.slug}_${this.state.siteSuffix}_MasterRole`
+    this.apiName = `${this.config.slug}_${this.state.siteSuffix}_api`;
 
     this.allApps = ['_carolina', 'home'].concat(this.config.apps);
   }
@@ -73,7 +80,7 @@ class CarolinaLib {
         walk(`apps/${appName}/models`).map(async function(fpath) {
 
           var modelName = fpath.split(`apps/${appName}/models/`)[1].split('.yml')[0];
-          if (self.state.createdTables.indexOf(modelName) != -1) { return; }
+          if (self.state.createdTables.indexOf(`${appName}_${modelName}`) != -1) { return; }
 
           var tableName = `${self.config.slug}_${self.state.siteSuffix}_${appName}_${modelName}`;
           var modelConfig = yaml.load(fpath);
@@ -88,9 +95,8 @@ class CarolinaLib {
             }
           };
 
-          console.log(params)
           await self.createTable(params);
-          self.state.createdTables.push(modelName);
+          self.state.createdTables.push(`${appName}_${modelName}`);
         });
       }
     }
@@ -161,6 +167,39 @@ class CarolinaLib {
               prerenderData: prerenderConfig.prerenderData,
               localData: prerenderFile.data
             }));
+        }
+      }
+    }
+  }
+
+  async createZip(inputDir, outputFile) {
+    return new Promise(function(resolve, reject) {
+
+      var output = fs.createWriteStream(outputFile);
+      var archive = archiver('zip', { zlib: { level: 9 } });
+
+      output.on('close', function() { resolve() });
+      archive.on('error', function(err) { reject(err) });
+
+      archive.pipe(output);
+      archive.directory(inputDir, false);
+      archive.finalize();
+    });
+  }
+
+  async createHttpArchives() {
+    for (var i = 0; i < this.allApps.length; ++i) {
+      var appName = this.allApps[i];
+      if (fs.existsSync(`apps/${appName}/http`)) {
+        var httpPackages = fs.readdirSync(`apps/${appName}/http`);
+        for (var j = 0; j < httpPackages.length; ++j) {
+
+          var httpPackage = `apps/${appName}/http/${httpPackages[j]}`;
+          var outfile = `apps/${appName}/private/http/${httpPackages[j]}.zip`;
+
+          fs.ensureDirSync(`apps/${appName}/private/http/`);
+
+          await this.createZip(httpPackage, outfile);
         }
       }
     }
@@ -293,11 +332,21 @@ class CarolinaLib {
     }
   }
 
+  copyModelDefinitions() {
+    for (var i = 0; i < this.allApps.length; ++i) {
+      var appName = this.allApps[i];
+      if (fs.existsSync(`apps/${appName}/models`)) {
+        fs.copySync(`apps/${appName}/models`,
+          `apps/_carolina/private/models/${appName}`);
+      }
+    }
+  }
   async fillPrivateBucket() {
 
+    this.copyModelDefinitions();
     var self = this;
-    var apps = ['_carolina', 'home'].concat(this.config.apps);
 
+    var apps = ['_carolina', 'home'].concat(this.config.apps);
     for (var i = 0; i < apps.length; ++i) {
       var appName = apps[i];
       if (fs.existsSync(`apps/${appName}/private`)) {
@@ -317,6 +366,90 @@ class CarolinaLib {
 
           await self.putS3File(params);
         });
+      }
+    }
+  }
+
+  async createMasterRole() {
+
+    if (this.state.roleCreated) return null;
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        AssumeRolePolicyDocument: AwsRoles.lambdaRoleDocument,
+        RoleName: self.masterRoleName
+      };
+      self.IAM.createRole(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          self.state.roleCreated = true;
+          self.state.roleARN = data.Role.Arn;
+          resolve(data.Role.Arn);
+        }
+      });
+    });
+  }
+
+  async createMasterAPI() {
+
+    if (this.state.apiCreated) return null;
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        name: self.apiName
+      };
+      self.APIGateway.createRestApi(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          self.state.apiCreated = true;
+          self.state.apiID = data.id;
+          resolve(data);
+        }
+      });
+    });
+  }
+
+  async putHttpPackage(app, serviceName) {
+
+    var self = this;
+    if (this.state.createdHttpFunctions.indexOf(`${app}_${serviceName}`) != -1)
+      return null;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        Code: {
+          S3Bucket: self.privateBucketName,
+          S3Key: `${app}/http/${serviceName}.zip`
+        },
+        FunctionName: `${self.config.slug}_${self.state.siteSuffix}_http_${app}_${serviceName}`,
+        Handler: 'index.handler',
+        Role: self.state.roleARN,
+        Runtime: 'nodejs6.10'
+      };
+      self.Lambda.createFunction(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          self.state.createdHttpFunctions.push(`${app}_${serviceName}`);
+          resolve(data);
+        }
+      });
+    });
+  }
+
+  async putHttpPackages() {
+    for (var i = 0; i < this.allApps.length; ++i) {
+      var appName = this.allApps[i];
+      if (fs.existsSync(`apps/${appName}/http`)) {
+        var httpPackages = fs.readdirSync(`apps/${appName}/http`);
+        for (var j = 0; j < httpPackages.length; ++j) {
+          var httpPackage = httpPackages[j];
+          if (fs.existsSync(`apps/${appName}/private/http/${httpPackage}.zip`)) {
+            await this.putHttpPackage(appName, httpPackage);
+
+          }
+        }
       }
     }
   }

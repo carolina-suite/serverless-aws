@@ -1,8 +1,7 @@
 
-* Basic Models with DynamoDB
-* Model ORM Lambda Function (`_carolina` app)
 * Master Carolina Lamda Function
 * API Gateway Tie-in
+* Model ORM Lambda Function (`_carolina` app) as Service
 * JS Service for API Communication
 * Login Service on Lambda
 * Auth Application
@@ -10,3 +9,12 @@
 * Cron Job Lamda Functions
 * Docker Services (not-so-serverless)
 * Add to Carolina Suite
+
+## App Process #
+
+* Models
+* Seed Data
+* Middleware
+* Lambda Services
+* Frontend Services
+* View Layer

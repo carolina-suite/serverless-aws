@@ -2,6 +2,7 @@
 var path = require('path');
 
 var fs = require('fs-extra');
+var sleepPromise = require('sleep-promise');
 
 var CarolinaLib = require('./_carolina');
 var config = require('./config');
@@ -12,6 +13,9 @@ async function deploy() {
   var Carolina = new CarolinaLib(config);
 
   await Carolina.createTables();
+  await Carolina.createMasterRole();
+  await Carolina.createMasterAPI();
+  await sleepPromise(5000);
 
   // create public bucket if it does not exist
   if (!Carolina.state.publicBucketExists) {
@@ -24,6 +28,8 @@ async function deploy() {
   }
   await Carolina.fillPublicBucket();
   await Carolina.fillPrivateBucket();
+
+  await Carolina.putHttpPackages();
 
   console.log(Carolina.state);
   await Carolina.putState();

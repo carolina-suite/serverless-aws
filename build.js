@@ -6,6 +6,7 @@ async function build() {
   var Carolina = new CarolinaLib(config);
   await Carolina.gatherPrerenderTemplates();
   await Carolina.doPrerender();
+  await Carolina.createHttpArchives();
 }
 
 build();
