@@ -6,3 +6,5 @@
 
 # you should always ignore these temp folders
 .prerender
+
+temp.js

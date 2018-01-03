@@ -447,7 +447,144 @@ class CarolinaLib {
           var httpPackage = httpPackages[j];
           if (fs.existsSync(`apps/${appName}/private/http/${httpPackage}.zip`)) {
             await this.putHttpPackage(appName, httpPackage);
+          }
+        }
+      }
+    }
+  }
 
+  async getApiRootId() {
+
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        restApiId: self.state.apiID
+      };
+      self.APIGateway.getResources(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          for (var i = 0; i < data.items.length; ++i) {
+            if (data.items[i].path == '/') return resolve(data.items[i].id);
+          }
+          reject("Root Resource not found.");
+        }
+      });
+    });
+  }
+
+  async createEndpoint(app, serviceName) {
+
+    var self = this;
+    var rootId = await this.getApiRootId();
+
+    if (this.state.createdEndpoints.hasOwnProperty(`${app}_${serviceName}`))
+      return null;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        parentId: rootId,
+        pathPart: `${app}_${serviceName}`,
+        restApiId: self.state.apiID
+      };
+      self.APIGateway.createResource(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          self.state.createdEndpoints[`${app}_${serviceName}`] = data.id;
+          resolve(data);
+        }
+      });
+    });
+  }
+
+  async createEndpointMethod(app, serviceName) {
+
+    var self = this;
+    var resourceId = this.state.createdEndpoints[`${app}_${serviceName}`];
+
+    if (this.state.createdMethods.indexOf(`${app}_${serviceName}`) != -1)
+      return null;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        authorizationType: 'NONE',
+        httpMethod: 'POST',
+        resourceId: resourceId,
+        restApiId: self.state.apiID
+      };
+      self.APIGateway.putMethod(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          self.state.createdMethods.push(`${app}_${serviceName}`);
+          resolve(data);
+        }
+      });
+    });
+  }
+
+  async getFunctionArn(app, serviceName) {
+
+    if (this.state.functionArns.hasOwnProperty(`http_${app}_${serviceName}`)) {
+      return this.state.functionArns[`http_${app}_${serviceName}`];
+    }
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        FunctionName: `${self.config.slug}_${self.state.siteSuffix}_http_${app}_${serviceName}`
+      };
+      self.Lambda.getFunction(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          self.state.functionArns[`http_${app}_${serviceName}`] = data.Configuration.FunctionArn;
+          resolve(data.Configuration.FunctionArn);
+        }
+      })
+    })
+  }
+
+  async createEndpointIntegration(app, serviceName) {
+
+    if (this.state.createdIntegrations.indexOf(`${app}_${serviceName}`) != -1) {
+      return null;
+    }
+    var self = this;
+    var resourceId = this.state.createdEndpoints[`${app}_${serviceName}`];
+    var functionArn = await this.getFunctionArn(app, serviceName);
+    var uri = `arn:aws:apigateway:${this.config.awsRegion}:lambda:path/2015-03-31/functions/${functionArn}/invocations`;
+
+    return new Promise(function(resolve, reject) {
+      // --uri arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:HelloWorld/invocations
+      var params = {
+        httpMethod: 'POST',
+        integrationHttpMethod: 'POST',
+        resourceId: resourceId,
+        restApiId: self.state.apiID,
+        type: 'AWS_PROXY',
+        uri: uri
+      };
+      console.log(params);
+      self.APIGateway.putIntegration(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          self.state.createdIntegrations.push(`${app}_${serviceName}`);
+          resolve(data);
+        }
+      });
+    });
+  }
+
+  async createEndpoints() {
+    for (var i = 0; i < this.allApps.length; ++i) {
+      var appName = this.allApps[i];
+      if (fs.existsSync(`apps/${appName}/http`)) {
+        var httpPackages = fs.readdirSync(`apps/${appName}/http`);
+        for (var j = 0; j < httpPackages.length; ++j) {
+          var httpPackage = httpPackages[j];
+          if (fs.existsSync(`apps/${appName}/private/http/${httpPackage}.zip`)) {
+            await this.createEndpoint(appName, httpPackage);
+            await this.createEndpointMethod(appName, httpPackage);
+            await this.createEndpointIntegration(appName, httpPackage);
           }
         }
       }

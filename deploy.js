@@ -15,6 +15,9 @@ async function deploy() {
   await Carolina.createTables();
   await Carolina.createMasterRole();
   await Carolina.createMasterAPI();
+  await Carolina.createEndpoints();
+
+  // allow some things to populate before proceding
   await sleepPromise(5000);
 
   // create public bucket if it does not exist
@@ -26,6 +29,7 @@ async function deploy() {
   if (!Carolina.state.privateBucketExists) {
     await Carolina.createPrivateBucket();
   }
+
   await Carolina.fillPublicBucket();
   await Carolina.fillPrivateBucket();
 
