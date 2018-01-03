@@ -12,9 +12,14 @@ async function deploy() {
   var messages = [];
   var Carolina = new CarolinaLib(config);
 
+  // create DynamoDB tables
   await Carolina.createTables();
+  // create IAM role and add admin policy
   await Carolina.createMasterRole();
+  await Carolina.addPolicyToMasterRole();
+  // create APIGateway API
   await Carolina.createMasterAPI();
+  // create APIGateway Endpoints
   await Carolina.createEndpoints();
 
   // allow some things to populate before proceding

@@ -391,6 +391,26 @@ class CarolinaLib {
     });
   }
 
+  async addPolicyToMasterRole() {
+
+    if (this.state.roleHasPolicy) return null;
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        PolicyArn: 'arn:aws:iam::aws:policy/AdministratorAccess',
+        RoleName: self.masterRoleName
+      };
+      self.IAM.attachRolePolicy(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          self.state.roleHasPolicy = true;
+          resolve(data);
+        }
+      })
+    })
+  }
+
   async createMasterAPI() {
 
     if (this.state.apiCreated) return null;
@@ -438,6 +458,30 @@ class CarolinaLib {
     });
   }
 
+  async applyPermissionForHttpPackage(app, serviceName) {
+
+    if (this.state.permittedIntegrations.indexOf(`${app}_${serviceName}`) != -1)
+      return null;
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        Action: 'lambda:InvokeFunction',
+        FunctionName: `${self.config.slug}_${self.state.siteSuffix}_http_${app}_${serviceName}`,
+        Principal: 'apigateway.amazonaws.com',
+        StatementId: `permit_${self.config.slug}_${self.state.siteSuffix}_http_${app}_${serviceName}`
+      };
+      self.Lambda.addPermission(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          console.log(`Added API Gateway Permissions for http_${app}_${serviceName}.`);
+          self.state.permittedIntegrations.push(`${app}_${serviceName}`);
+          resolve(data);
+        }
+      })
+    })
+  }
+
   async putHttpPackages() {
     for (var i = 0; i < this.allApps.length; ++i) {
       var appName = this.allApps[i];
@@ -447,6 +491,7 @@ class CarolinaLib {
           var httpPackage = httpPackages[j];
           if (fs.existsSync(`apps/${appName}/private/http/${httpPackage}.zip`)) {
             await this.putHttpPackage(appName, httpPackage);
+            await this.applyPermissionForHttpPackage(appName, httpPackage);
           }
         }
       }

@@ -9,6 +9,7 @@ module.exports = function() {
     createdIntegrations: [],
     createdMethods: [],
     functionArns: {},
+    permittedIntegrations: [],
     secret: generateToken(16),
     siteSuffix: generateToken(8)
   };
