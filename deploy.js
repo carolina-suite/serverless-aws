@@ -19,8 +19,7 @@ async function deploy() {
   await Carolina.addPolicyToMasterRole();
   // create APIGateway API
   await Carolina.createMasterAPI();
-  // create APIGateway Endpoints
-  await Carolina.createEndpoints();
+
 
   // allow some things to populate before proceding
   await sleepPromise(5000);
@@ -35,10 +34,17 @@ async function deploy() {
     await Carolina.createPrivateBucket();
   }
 
+  // fill S3 buckets
   await Carolina.fillPublicBucket();
   await Carolina.fillPrivateBucket();
 
+
+  // create/update Lambda functions
   await Carolina.putHttpPackages();
+  // create/update APIGateway Endpoints
+  await Carolina.createEndpoints();
+  // deploy api
+  await Carolina.deployAPI();
 
   console.log(Carolina.state);
   await Carolina.putState();

@@ -10,5 +10,6 @@
   * [Prerender Templates](./PRERENDER.md)
   * [Public Files](./PUBLIC.md)
   * [Private Files](./PRIVATE.md)
+  * [Http Endpoints](./HTTP.md)
   * [Webpack](./WEBPACK.md)
 * [Fixtures](./FIXTURES.md)

@@ -431,11 +431,32 @@ class CarolinaLib {
     });
   }
 
+  async updateHttpPackage(app, serviceName) {
+
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+       var params = {
+         FunctionName: `${self.config.slug}_${self.state.siteSuffix}_http_${app}_${serviceName}`,
+         S3Bucket: self.privateBucketName,
+         S3Key: `${app}/http/${serviceName}.zip`
+       };
+       self.Lambda.updateFunctionCode(params, function(err, data) {
+         if (err) reject(err);
+         else {
+           console.log(`Updating code for Lambda function http_${app}_${serviceName}.`);
+           resolve(data);
+         }
+       })
+    });
+  }
+
   async putHttpPackage(app, serviceName) {
 
     var self = this;
-    if (this.state.createdHttpFunctions.indexOf(`${app}_${serviceName}`) != -1)
-      return null;
+    if (this.state.createdHttpFunctions.indexOf(`${app}_${serviceName}`) != -1) {
+      return await this.updateHttpPackage(app, serviceName);
+    }
 
     return new Promise(function(resolve, reject) {
       var params = {
@@ -451,6 +472,7 @@ class CarolinaLib {
       self.Lambda.createFunction(params, function(err, data) {
         if (err) reject(err);
         else {
+          console.log(`Created Lambda function for http_${app}_${serviceName}`);
           self.state.createdHttpFunctions.push(`${app}_${serviceName}`);
           resolve(data);
         }
@@ -634,6 +656,26 @@ class CarolinaLib {
         }
       }
     }
+  }
+
+  async deployAPI() {
+
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        restApiId: self.state.apiID,
+        stageName: 'api'
+      };
+      self.APIGateway.createDeployment(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          console.log("API deployed.");
+          console.log(data);
+          resolve(data);
+        }
+      });
+    });
   }
 
   async putState() {
