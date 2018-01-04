@@ -1,6 +1,5 @@
 
-* Master Carolina Lamda Function
-* API Gateway Tie-in
+* Non-HTTP Lambda Services
 * Model ORM Lambda Function (`_carolina` app) as Service
 * JS Service for API Communication
 * Login Service on Lambda

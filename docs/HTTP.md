@@ -1,6 +1,8 @@
 
 # HTTP Endpoints #
 
+You can define code that handles HTTP POST requests via API Gateway.
+
 Each HTTP endpoint should go in a folder called
 `apps/<appName>/http/<endpointName>/`.
 
@@ -10,7 +12,7 @@ AWS Lambda function that will publically callable via POST request at
 
 ## Format #
 
-The endpoint directory should contain an `index.js` file that exports
+The endpoint directory must contain an `index.js` file that exports
 a function called `handler` that looks like this:
 
 ```js
