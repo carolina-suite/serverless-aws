@@ -20,7 +20,6 @@ async function deploy() {
   // create APIGateway API
   await Carolina.createMasterAPI();
 
-
   // allow some things to populate before proceding
   await sleepPromise(5000);
 
@@ -38,9 +37,9 @@ async function deploy() {
   await Carolina.fillPublicBucket();
   await Carolina.fillPrivateBucket();
 
-
   // create/update Lambda functions
   await Carolina.putHttpPackages();
+  await Carolina.putSvcPackages();
   // create/update APIGateway Endpoints
   await Carolina.createEndpoints();
   // deploy api

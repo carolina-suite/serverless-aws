@@ -7,3 +7,4 @@ The following steps are taken when you run `node build`
 * Prerender pug templates from all apps are copied to the `.prerender` dir.
 * The prerender config files are read and executed, creating output files in app public dirs.
 * All HTTP packages are zipped and placed in the app private dirs.
+* All service packages are zipped and placed in the app private dirs.

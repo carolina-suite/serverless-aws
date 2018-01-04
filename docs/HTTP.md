@@ -44,3 +44,5 @@ zipped and sent to your site's private S3 Bucket and opened to a Lambda function
 
 You will not need to know the API Gateway Url, a front end Javascript
 config file will be generated that has the URL stored as a variable.
+
+See the [Service page](./SERVICES.md) for more on writing Lambda functions.

@@ -195,11 +195,35 @@ class CarolinaLib {
         for (var j = 0; j < httpPackages.length; ++j) {
 
           var httpPackage = `apps/${appName}/http/${httpPackages[j]}`;
+          fs.copySync('_carolina/svclib/_carolina.js',
+            `${httpPackage}/_carolina.js`);
           var outfile = `apps/${appName}/private/http/${httpPackages[j]}.zip`;
 
           fs.ensureDirSync(`apps/${appName}/private/http/`);
 
           await this.createZip(httpPackage, outfile);
+          console.log(`Created bundle for http_${appName}_${httpPackages[j]}.`);
+        }
+      }
+    }
+  }
+
+  async createSvcArchives() {
+    for (var i = 0; i < this.allApps.length; ++i) {
+      var appName = this.allApps[i];
+      if (fs.existsSync(`apps/${appName}/services`)) {
+        var httpPackages = fs.readdirSync(`apps/${appName}/services`);
+        for (var j = 0; j < httpPackages.length; ++j) {
+
+          var httpPackage = `apps/${appName}/services/${httpPackages[j]}`;
+          fs.copySync('_carolina/svclib/_carolina.js',
+            `${httpPackage}/_carolina.js`);
+          var outfile = `apps/${appName}/private/svc/${httpPackages[j]}.zip`;
+
+          fs.ensureDirSync(`apps/${appName}/private/svc/`);
+
+          await this.createZip(httpPackage, outfile);
+          console.log(`Created bundle for http_${appName}_${httpPackages[j]}.`);
         }
       }
     }
@@ -407,8 +431,8 @@ class CarolinaLib {
           self.state.roleHasPolicy = true;
           resolve(data);
         }
-      })
-    })
+      });
+    });
   }
 
   async createMasterAPI() {
@@ -447,7 +471,7 @@ class CarolinaLib {
            console.log(`Updating code for Lambda function http_${app}_${serviceName}.`);
            resolve(data);
          }
-       })
+       });
     });
   }
 
@@ -463,6 +487,12 @@ class CarolinaLib {
         Code: {
           S3Bucket: self.privateBucketName,
           S3Key: `${app}/http/${serviceName}.zip`
+        },
+        Environment: {
+          Variables: {
+            siteSuffix: self.state.siteSuffix,
+            svcPrefix: `${self.config.slug}_${self.state.siteSuffix}_svc_`
+          }
         },
         FunctionName: `${self.config.slug}_${self.state.siteSuffix}_http_${app}_${serviceName}`,
         Handler: 'index.handler',
@@ -514,6 +544,103 @@ class CarolinaLib {
           if (fs.existsSync(`apps/${appName}/private/http/${httpPackage}.zip`)) {
             await this.putHttpPackage(appName, httpPackage);
             await this.applyPermissionForHttpPackage(appName, httpPackage);
+          }
+        }
+      }
+    }
+  }
+
+  async updateSvcPackage(app, serviceName) {
+
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+       var params = {
+         FunctionName: `${self.config.slug}_${self.state.siteSuffix}_svc_${app}_${serviceName}`,
+         S3Bucket: self.privateBucketName,
+         S3Key: `${app}/svc/${serviceName}.zip`
+       };
+       self.Lambda.updateFunctionCode(params, function(err, data) {
+         if (err) reject(err);
+         else {
+           console.log(`Updating code for Lambda function svc_${app}_${serviceName}.`);
+           resolve(data);
+         }
+       })
+    });
+  }
+
+  async putSvcPackage(app, serviceName) {
+
+    var self = this;
+    if (this.state.createdSvcFunctions.indexOf(`${app}_${serviceName}`) != -1) {
+      return await this.updateSvcPackage(app, serviceName);
+    }
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        Code: {
+          S3Bucket: self.privateBucketName,
+          S3Key: `${app}/svc/${serviceName}.zip`
+        },
+        Environment: {
+          Variables: {
+            siteSuffix: self.state.siteSuffix,
+            svcPrefix: `${self.config.slug}_${self.state.siteSuffix}_svc_`
+          }
+        },
+        FunctionName: `${self.config.slug}_${self.state.siteSuffix}_svc_${app}_${serviceName}`,
+        Handler: 'index.handler',
+        Role: self.state.roleARN,
+        Runtime: 'nodejs6.10'
+      };
+      self.Lambda.createFunction(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          console.log(`Created Lambda function for svc_${app}_${serviceName}`);
+          self.state.createdSvcFunctions.push(`${app}_${serviceName}`);
+          resolve(data);
+        }
+      });
+    });
+  }
+
+  /**
+  async applyPermissionForSvcPackage(app, serviceName) {
+
+    if (this.state.permittedIntegrations.indexOf(`${app}_${serviceName}`) != -1)
+      return null;
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        Action: 'lambda:InvokeFunction',
+        FunctionName: `${self.config.slug}_${self.state.siteSuffix}_http_${app}_${serviceName}`,
+        Principal: 'apigateway.amazonaws.com',
+        StatementId: `permit_${self.config.slug}_${self.state.siteSuffix}_http_${app}_${serviceName}`
+      };
+      self.Lambda.addPermission(params, function(err, data) {
+        if (err) reject(err);
+        else {
+          console.log(`Added API Gateway Permissions for http_${app}_${serviceName}.`);
+          self.state.permittedIntegrations.push(`${app}_${serviceName}`);
+          resolve(data);
+        }
+      })
+    })
+  }
+  */
+
+  async putSvcPackages() {
+    for (var i = 0; i < this.allApps.length; ++i) {
+      var appName = this.allApps[i];
+      if (fs.existsSync(`apps/${appName}/services`)) {
+        var httpPackages = fs.readdirSync(`apps/${appName}/services`);
+        for (var j = 0; j < httpPackages.length; ++j) {
+          var httpPackage = httpPackages[j];
+          if (fs.existsSync(`apps/${appName}/private/svc/${httpPackage}.zip`)) {
+            await this.putSvcPackage(appName, httpPackage);
+            // await this.applyPermissionForHttpPackage(appName, httpPackage);
           }
         }
       }

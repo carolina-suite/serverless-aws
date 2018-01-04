@@ -7,6 +7,7 @@ async function build() {
   await Carolina.gatherPrerenderTemplates();
   await Carolina.doPrerender();
   await Carolina.createHttpArchives();
+  await Carolina.createSvcArchives();
 }
 
 build();

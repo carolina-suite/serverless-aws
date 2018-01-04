@@ -11,5 +11,6 @@
   * [Public Files](./PUBLIC.md)
   * [Private Files](./PRIVATE.md)
   * [Http Endpoints](./HTTP.md)
+  * [Lambda Services](./SERVICES.md)
   * [Webpack](./WEBPACK.md)
 * [Fixtures](./FIXTURES.md)

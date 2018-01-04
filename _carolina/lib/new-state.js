@@ -8,6 +8,7 @@ module.exports = function() {
     createdHttpFunctions: [],
     createdIntegrations: [],
     createdMethods: [],
+    createdSvcFunctions: [],
     functionArns: {},
     permittedIntegrations: [],
     secret: generateToken(16),

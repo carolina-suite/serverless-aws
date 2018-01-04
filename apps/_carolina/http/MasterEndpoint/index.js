@@ -1,11 +1,12 @@
 
+var C = require('./_carolina');
+
 exports.handler = function(event, context, callback) {
-  callback(null, {
-    statusCode: 200,
-    headers: {},
-    body: JSON.stringify({
-      event: event,
-      context: context
+  C.invokeService('_carolina', 'test', { message: "This is a test." })
+    .then(function(data) {
+       C.sendResponse(data, callback);
     })
-  });
+    .catch(function(err) {
+      callback(err);
+    })
 };
