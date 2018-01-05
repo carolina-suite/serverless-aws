@@ -490,6 +490,7 @@ class CarolinaLib {
         },
         Environment: {
           Variables: {
+            privateBucket: self.privateBucketName,
             siteSuffix: self.state.siteSuffix,
             svcPrefix: `${self.config.slug}_${self.state.siteSuffix}_svc_`
           }
@@ -566,7 +567,7 @@ class CarolinaLib {
            console.log(`Updating code for Lambda function svc_${app}_${serviceName}.`);
            resolve(data);
          }
-       })
+       });
     });
   }
 
@@ -585,6 +586,7 @@ class CarolinaLib {
         },
         Environment: {
           Variables: {
+            privateBucket: self.privateBucketName,
             siteSuffix: self.state.siteSuffix,
             svcPrefix: `${self.config.slug}_${self.state.siteSuffix}_svc_`
           }

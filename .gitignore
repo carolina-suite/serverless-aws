@@ -1,5 +1,5 @@
 
-**/node_modules/
+node_modules/
 
 # don't ignore .state if you want to manage from multiple locations
 .state
