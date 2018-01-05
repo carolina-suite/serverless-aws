@@ -1,19 +1,24 @@
 
 var C = require('./_carolina');
 
+var yaml = require('yamljs');
+
 function listModels() {
 
 }
 
 exports.handler = function(event, context, callback) {
 
-  C.getPrivateFile('_carolina', 'models/auth/User.yml', true)
+  C.getModelSchema('auth', 'User')
   .then(function(data) {
+
+    var model = yaml.parse(data);
+
     C.sendResponse({
-      fileText: data
+      fileText: model
     }, callback);
   })
-  .err(function(err) {
+  .catch(function(err) {
     callback(err)
   });
 };

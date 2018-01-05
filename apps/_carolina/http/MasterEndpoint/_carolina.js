@@ -4,6 +4,10 @@ var aws = require('aws-sdk');
 var lambda = new aws.Lambda();
 var s3 = new aws.S3();
 
+this.getModelSchema = function(app, modelName) {
+  return this.getPrivateFile('_carolina', 'models/' + app + '/' + modelName, true);
+};
+
 this.getPrivateFile = function(app, path, convertToString) {
 
   var params = {
