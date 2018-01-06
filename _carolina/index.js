@@ -197,6 +197,8 @@ class CarolinaLib {
           var httpPackage = `apps/${appName}/http/${httpPackages[j]}`;
           fs.copySync('_carolina/svclib/_carolina.js',
             `${httpPackage}/_carolina.js`);
+          fs.copySync('_carolina/models',
+            `${httpPackage}/models`);
           var outfile = `apps/${appName}/private/http/${httpPackages[j]}.zip`;
 
           fs.ensureDirSync(`apps/${appName}/private/http/`);
@@ -218,6 +220,8 @@ class CarolinaLib {
           var httpPackage = `apps/${appName}/services/${httpPackages[j]}`;
           fs.copySync('_carolina/svclib/_carolina.js',
             `${httpPackage}/_carolina.js`);
+          fs.copySync('_carolina/models',
+            `${httpPackage}/models`);
           var outfile = `apps/${appName}/private/svc/${httpPackages[j]}.zip`;
 
           fs.ensureDirSync(`apps/${appName}/private/svc/`);
@@ -492,6 +496,7 @@ class CarolinaLib {
           Variables: {
             privateBucket: self.privateBucketName,
             siteSuffix: self.state.siteSuffix,
+            slug: self.config.slug,
             svcPrefix: `${self.config.slug}_${self.state.siteSuffix}_svc_`
           }
         },
@@ -588,6 +593,7 @@ class CarolinaLib {
           Variables: {
             privateBucket: self.privateBucketName,
             siteSuffix: self.state.siteSuffix,
+            slug: self.config.slug,
             svcPrefix: `${self.config.slug}_${self.state.siteSuffix}_svc_`
           }
         },

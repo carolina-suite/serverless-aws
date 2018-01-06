@@ -1,6 +1,5 @@
 
 * Model ORM Lambda Function (`_carolina` app) as Service
-  * Get Model Schema
   * Create New Record
   * Create New Records
   * Get Record

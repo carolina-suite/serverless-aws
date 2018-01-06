@@ -5,7 +5,7 @@ var lambda = new aws.Lambda();
 var s3 = new aws.S3();
 
 this.getModelSchema = function(app, modelName) {
-  return this.getPrivateFile('_carolina', 'models/' + app + '/' + modelName, true);
+  return this.getPrivateFile('_carolina', 'models/' + app + '/' + modelName + '.yml', true);
 };
 
 this.getPrivateFile = function(app, path, convertToString) {
@@ -13,7 +13,7 @@ this.getPrivateFile = function(app, path, convertToString) {
   var params = {
     Bucket: process.env.privateBucket,
     Key: app + "/" + path
-  }
+  };
   return new Promise(function(resolve, reject) {
     s3.getObject(params, function(err, data) {
       if (err) reject(err);
@@ -25,12 +25,16 @@ this.getPrivateFile = function(app, path, convertToString) {
       }
     });
   });
-}
+};
 
 this.getSvcPrefix = function() {
   var p = process.env.svcPrefix;
   if (!p.endsWith('_')) p = p + '_';
   return p;
+};
+
+this.getTablePrefix = function() {
+  return process.env.slug + '_' + process.env.siteSuffix + '_';
 };
 
 this.invokeService = function(app, service, args) {
@@ -47,6 +51,19 @@ this.invokeService = function(app, service, args) {
     });
   });
 };
+
+this.listPrivateFiles = function(prefix) {
+  return new Promise(function(resolve, reject) {
+    var params = {
+      Bucket: process.env.privateBucket
+    };
+    if (prefix) params.Prefix = prefix;
+    s3.listObjects(params, function(err, data) {
+      if (err) reject(err);
+      else resolve(data.Contents);
+    });
+  });
+}
 
 this.sendResponse = function(res, cb) {
   cb(null, {
