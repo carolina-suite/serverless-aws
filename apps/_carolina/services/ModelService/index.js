@@ -20,20 +20,29 @@ function insertObject(app, model, obj, cb) {
   C.getModelSchema(app, model)
   .then(function(schemaYaml) {
 
-    var schemaObj = yaml.parse(schemaYaml);
-    var schema = new Schema(schemaObj);
+    var schema = new Schema(yaml.parse(schemaYaml));
     var params = {
-      TableName: C.getTablePrefix() + app + '_' + model,
-      Item: schema.toInsertObj(obj)
+      Key: schema.getLookupKey(obj[schema.keyField]),
+      TableName: C.getTablePrefix() + app + '_' + model
     };
 
-    dynamoDB.putItem(params, function(err, data) {
+    dynamoDB.getItem(params, function(err, data) {
       if (err) cb(err);
-      else cb(null, data);
+      else {
+        if (data.hasOwnProperty('Item'))
+          cb("Already exists.");
+        else {
+          var params = {
+            TableName: C.getTablePrefix() + app + '_' + model,
+            Item: schema.toInsertObj(obj)
+          };
+          dynamoDB.putItem(params, function(err, data) {
+            if (err) cb(err);
+            else cb(null, data);
+          });
+        }
+      }
     });
-  })
-  .catch(function(err) {
-    cb(err);
   });
 }
 
@@ -73,8 +82,33 @@ var lookupObject = function(app, model, value, cb) {
     dynamoDB.getItem(params, function(err, data) {
       if (err) cb(err);
       else {
-        cb(null, schema.fromDB(data.Item));
+        if (data.Item)
+          cb(null, schema.fromDB(data.Item));
+        else {
+          cb(null, null);
+        }
       }
+    });
+  })
+  .catch(function(err) {
+    cb(err);
+  });
+};
+
+function upsertObject(app, model, obj, cb) {
+  C.getModelSchema(app, model)
+  .then(function(schemaYaml) {
+
+    var schemaObj = yaml.parse(schemaYaml);
+    var schema = new Schema(schemaObj);
+    var params = {
+      TableName: C.getTablePrefix() + app + '_' + model,
+      Item: schema.toInsertObj(obj)
+    };
+
+    dynamoDB.putItem(params, function(err, data) {
+      if (err) cb(err);
+      else cb(null, data);
     });
   })
   .catch(function(err) {
@@ -96,6 +130,9 @@ exports.handler = function(event, context, callback) {
       break;
     case 'lookup':
       lookupObject(event.app, event.model, event.value, callback);
+      break;
+    case 'upsert':
+      upsertObject(event.app, event.model, event.obj, callback);
       break;
     default:
       callback("Invalid action provided.");

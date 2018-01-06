@@ -1,8 +1,6 @@
 
 * Model ORM Lambda Function (`_carolina` app) as Service
-  * Get Record
   * Query
-  * Update Record
   * Delete Record
 * Frontend JS Service for API Communication
 * Login Service on Lambda
