@@ -31,6 +31,9 @@ function insertObject(app, model, obj, cb) {
       if (err) cb(err);
       else cb(null, data);
     });
+  })
+  .catch(function(err) {
+    cb(err);
   });
 }
 
@@ -57,6 +60,28 @@ function listModels(cb) {
   });
 }
 
+var lookupObject = function(app, model, value, cb) {
+  C.getModelSchema(app, model)
+  .then(function(schemaYaml) {
+
+    var schema = new Schema(yaml.parse(schemaYaml));
+    var params = {
+      Key: schema.getLookupKey(value),
+      TableName: C.getTablePrefix() + app + '_' + model
+    };
+
+    dynamoDB.getItem(params, function(err, data) {
+      if (err) cb(err);
+      else {
+        cb(null, schema.fromDB(data.Item));
+      }
+    });
+  })
+  .catch(function(err) {
+    cb(err);
+  });
+}
+
 exports.handler = function(event, context, callback) {
   if (!event.action) callback("No action specified.");
   switch(event.action) {
@@ -68,6 +93,9 @@ exports.handler = function(event, context, callback) {
       break;
     case 'create':
       insertObject(event.app, event.model, event.obj, callback);
+      break;
+    case 'lookup':
+      lookupObject(event.app, event.model, event.value, callback);
       break;
     default:
       callback("Invalid action provided.");

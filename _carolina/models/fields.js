@@ -10,6 +10,10 @@ class Field {
     if (obj.hasOwnProperty('unique')) this.unique = obj.unique;
     else this.unique = false;
   }
+
+  fromDB(o) {
+    return o['S'];
+  }
 }
 
 class StringField extends Field {
@@ -54,6 +58,9 @@ class BooleanField extends Field {
   }
   toInsertObj(v) {
     return { BOOL: Boolean(v) };
+  }
+  fromDB(o) {
+    return o['BOOL'];
   }
 }
 

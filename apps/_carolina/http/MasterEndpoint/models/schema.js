@@ -11,6 +11,12 @@ class Schema {
     }
   }
 
+  getLookupKey(v) {
+    var k = {};
+    k[this.keyField] = this.fields[this.keyField].toInsertObj(v);
+    return k;
+  }
+
   toKeySchema() {
     return [
       {
@@ -35,6 +41,17 @@ class Schema {
       }
     }
     return insert;
+  }
+  fromDB(obj) {
+
+    var o = {};
+    for (var prop in this.fields) {
+      if (obj.hasOwnProperty(prop)) {
+        o[prop] = this.fields[prop].fromDB(obj[prop]);
+      }
+    }
+
+    return o;
   }
 }
 
