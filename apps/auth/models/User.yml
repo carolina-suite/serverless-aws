@@ -8,8 +8,10 @@ fields:
     unique: true
   password:
     type: String
+    secret: true
   salt:
     type: String
+    secret: true
   name:
     type: String
   emailAddress:

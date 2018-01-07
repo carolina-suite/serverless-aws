@@ -16,6 +16,28 @@ function getModelSchema(app, model, cb) {
   });
 }
 
+function deleteObject(app, model, value, cb) {
+  C.getModelSchema(app, model)
+  .then(function(schemaYaml) {
+
+    var schema = new Schema(yaml.parse(schemaYaml));
+    var params = {
+      Key: schema.getLookupKey(value),
+      TableName: C.getTablePrefix() + app + '_' + model
+    };
+
+    dynamoDB.deleteItem(params, function(err, data) {
+      if (err) cb(err);
+      else {
+        cb(null, data);
+      }
+    });
+  })
+  .catch(function(err) {
+    cb(err);
+  });
+}
+
 function insertObject(app, model, obj, cb) {
   C.getModelSchema(app, model)
   .then(function(schemaYaml) {
@@ -95,6 +117,29 @@ var lookupObject = function(app, model, value, cb) {
   });
 };
 
+// passes to dynamoDB.scan
+function query(app, model, query, cb) {
+  C.getModelSchema(app, model)
+  .then(function(schemaYaml) {
+
+    var schema = new Schema(yaml.parse(schemaYaml));
+    var params = query;
+
+    params.TableName = C.getTablePrefix() + app + '_' + model;
+
+    dynamoDB.scan(params, function(err, data) {
+      if(err) cb(err);
+      else {
+        var returnValues = [];
+        for (var i = 0; i < data.Items.length; ++i) {
+          returnValues.push(schema.fromDB(data.Items[i]));
+        }
+        cb(null, returnValues);
+      }
+    });
+  })
+}
+
 function upsertObject(app, model, obj, cb) {
   C.getModelSchema(app, model)
   .then(function(schemaYaml) {
@@ -131,8 +176,14 @@ exports.handler = function(event, context, callback) {
     case 'lookup':
       lookupObject(event.app, event.model, event.value, callback);
       break;
+    case 'query':
+      query(event.app, event.model, event.query, callback);
+      break;
     case 'upsert':
       upsertObject(event.app, event.model, event.obj, callback);
+      break;
+    case 'delete':
+      deleteObject(event.app, event.model, event.value, callback);
       break;
     default:
       callback("Invalid action provided.");
