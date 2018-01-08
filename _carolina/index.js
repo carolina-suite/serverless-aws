@@ -1,4 +1,5 @@
- ""
+
+var childProcess = require('child_process');
 var path = require('path');
 
 var archiver = require('archiver');
@@ -168,6 +169,29 @@ class CarolinaLib {
               localData: prerenderFile.data
             }));
         }
+      }
+    }
+  }
+  /**
+  async runDocusaurus(appName) {
+    return new Promise(function(resolve, reject) {
+      childProcess.exec("npm run build", {
+        cwd: path.resolve(__dirname, '..', `apps/${appName}/docusaurs/website/`)
+      }, function(err, stdout, stderr) {
+        if (err) reject(err);
+        else resolve(stdout);
+      });
+    });
+  }
+  */
+
+  async copyDocusaurus() {
+    for (var i = 1; i < this.allApps.length; ++i) {
+      var appName = this.allApps[i];
+      if (fs.existsSync(`apps/${appName}/docusaurus/website/build/${appName}`)) {
+        fs.copySync(`apps/${appName}/docusaurus/website/build/${appName}`,
+          `apps/${appName}/public`);
+        console.log(`Copied docusaurus build for ${appName}.`);
       }
     }
   }

@@ -22,6 +22,7 @@ module.exports = {
   ],
 
   apps: [
-    'auth'
+    'auth',
+    'docs_example'
   ]
 };
