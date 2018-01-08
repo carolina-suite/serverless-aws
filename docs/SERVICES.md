@@ -47,7 +47,7 @@ You can use a the Carolina helper file like this (note that the
 var C = require('./_carolina');
 
 exports.handler = function(event, context, callback) {
-  C.invokeService('_carolina', 'test', { message: "This is a test." })
+  C.invokeService('_carolina', 'ModelService', { message: "This is a test." })
     .then(function(data) {
        C.sendResponse(data, callback);
     })
@@ -60,7 +60,7 @@ exports.handler = function(event, context, callback) {
 In this example, the `C.invokeService(appName, serviceName, body)` is used
 to call an existing Service function using Promises and the
 `C.sendResponse(data, callback)` method is passed the original callback
-and sends the response with headers and a 200 status code.
+and sends the response with JSON headers and a 200 status code.
 
 You can use `_carolina.js` to call any service function you build and deploy
 using this method.

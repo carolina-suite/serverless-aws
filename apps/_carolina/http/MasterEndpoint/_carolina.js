@@ -27,6 +27,21 @@ this.getPrivateFile = function(app, path, convertToString) {
   });
 };
 
+this.getSiteState = function() {
+  var params = {
+    Bucket: process.env.privateBucket,
+    Key: '.site/state.json'
+  };
+  return new Promise(function(resolve, reject) {
+    s3.getObject(params, function(err, data) {
+      if (err) reject(err);
+      else {
+        resolve(JSON.parse(String(data.Body)));
+      }
+    });
+  });
+};
+
 this.getSvcPrefix = function() {
   var p = process.env.svcPrefix;
   if (!p.endsWith('_')) p = p + '_';
@@ -47,7 +62,7 @@ this.invokeService = function(app, service, args) {
   return new Promise(function(resolve, reject) {
     lambda.invoke(params, function(err, data) {
       if (err) reject(err);
-      else resolve(data.Payload);
+      else resolve(JSON.parse(data.Payload));
     });
   });
 };

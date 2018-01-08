@@ -1,7 +1,4 @@
 
-* Model ORM Lambda Function (`_carolina` app) as Service
-  * Delete Record
-* Frontend JS Service for API Communication
 * Login Service on Lambda
 * Authentication Check as a Service
 * Auth Application
