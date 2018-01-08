@@ -27,6 +27,21 @@ this.getPrivateFile = function(app, path, convertToString) {
   });
 };
 
+this.getSiteConfig = function() {
+  var params = {
+    Bucket: process.env.privateBucket,
+    Key: '.site/config.json'
+  };
+  return new Promise(function(resolve, reject) {
+    s3.getObject(params, function(err, data) {
+      if (err) reject(err);
+      else {
+        resolve(JSON.parse(String(data.Body)));
+      }
+    });
+  });
+};
+
 this.getSiteState = function() {
   var params = {
     Bucket: process.env.privateBucket,

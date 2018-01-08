@@ -13,6 +13,8 @@
   * [Http Endpoints](./HTTP.md)
   * [Lambda Services](./SERVICES.md)
   * [Webpack](./WEBPACK.md)
+* Special App Types
+  * [Docusaurus Static Sites](./DOCUSAURUS.md)
 * [Fixtures](./FIXTURES.md)
 * [Carolina Helpers]
   * [Carolina Lambda Lib](./C_LAMBDA.md)

@@ -7,6 +7,9 @@ module.exports = {
   awsProfile: 'personal',
   awsRegion: 'us-west-2',
 
+  // your aws domain must be the domain, email wont work without this set up
+  siteEmail: 'webmaster@johnfmarion.com',
+
   mainMenu: [
     { title: 'Account', link: '/auth' },
     { title: 'Admin', link: '/admin' },

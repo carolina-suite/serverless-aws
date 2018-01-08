@@ -56,6 +56,70 @@ function check(token, cb) {
   });
 }
 
+function forgot(username, email, cb) {
+  C.getSiteConfig()
+  .then(function(config) {
+    var modelServiceLookup = {
+      action: 'lookup',
+      app: 'auth',
+      model: 'User',
+      value: username
+    };
+    C.invokeService('_carolina', 'ModelService', modelServiceLookup)
+    .then(function(user) {
+      if (user.emailAddress == email) {
+
+        var newSalt = crypto.randomBytes(32).toString('hex');
+        var newPass = crypto.randomBytes(16).toString('hex');
+        user.password = crypto.pbkdf2Sync(Buffer(newPass), Buffer(newSalt),
+          1000, 64, 'sha512').toString('hex');
+        user.salt = newSalt;
+
+        var modelServiceUpsert = {
+          action: 'upsert',
+          app: 'auth',
+          model: 'User',
+          obj: user
+        };
+        C.invokeService('_carolina', 'ModelService', modelServiceUpsert)
+        .then(function(data) {
+          var emailServiceSendEmailTemplate = {
+            action: 'send-email-template',
+            app: 'auth',
+            template: 'password-reset',
+            data: {
+              siteName: config.name,
+              user: user.username,
+              password: newPass
+            },
+            to: [email],
+            from: config.siteEmail
+          };
+          C.invokeService('_carolina', 'EmailService', emailServiceSendEmailTemplate)
+          .then(function(data) {
+            cb(null, data);
+          })
+          .catch(function(err) {
+            cb(err);
+          });
+        })
+        .catch(function(err) {
+          cb(err);
+        });
+      }
+      else {
+        cb("Incorrect email address.");
+      }
+    })
+    .catch(function(err) {
+      cb(err);
+    });
+  })
+  .catch(function(err) {
+    cb(err);
+  });
+}
+
 function getUser(token, cb) {
   authCheck(token)
   .then(function(user) {
@@ -119,7 +183,7 @@ function register(username, password, emailAddress, cb) {
   };
   C.invokeService('_carolina', 'ModelService', modelServiceLookup)
   .then(function(data) {
-    if (data == 'null') {
+    if (data == null) {
 
       var salt = crypto.randomBytes(32).toString('hex');
       var saltedPass = crypto.pbkdf2Sync(password, salt,
@@ -240,6 +304,9 @@ exports.handler = function(event, context, callback) {
   switch(event.action) {
     case 'check':
       check(event.token, callback);
+      break;
+    case 'forgot':
+      forgot(event.username, event.emailAddress, callback);
       break;
     case 'get-user':
       getUser(event.token, callback);

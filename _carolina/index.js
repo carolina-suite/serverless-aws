@@ -527,7 +527,8 @@ class CarolinaLib {
         FunctionName: `${self.config.slug}_${self.state.siteSuffix}_http_${app}_${serviceName}`,
         Handler: 'index.handler',
         Role: self.state.roleARN,
-        Runtime: 'nodejs6.10'
+        Runtime: 'nodejs6.10',
+        Timeout: 60
       };
       self.Lambda.createFunction(params, function(err, data) {
         if (err) reject(err);
@@ -624,7 +625,8 @@ class CarolinaLib {
         FunctionName: `${self.config.slug}_${self.state.siteSuffix}_svc_${app}_${serviceName}`,
         Handler: 'index.handler',
         Role: self.state.roleARN,
-        Runtime: 'nodejs6.10'
+        Runtime: 'nodejs6.10',
+        Timeout: 60
       };
       self.Lambda.createFunction(params, function(err, data) {
         if (err) reject(err);
@@ -817,6 +819,15 @@ class CarolinaLib {
     }
   }
 
+  async writeFrontEndConfigFile() {
+    var lines = [];
+    lines.push(`var config = {`);
+    lines.push(`apiEndpoint: "https://${this.state.apiID}.execute-api.${this.config.awsRegion}.amazonaws.com/api/"`);
+    lines.push('};');
+    lines.push('export default config;');
+    fs.writeFileSync(`apps/_carolina/src/config.js`, lines.join('\n'));
+  }
+
   async deployAPI() {
 
     var self = this;
@@ -844,6 +855,13 @@ class CarolinaLib {
       Bucket: this.privateBucketName,
       ContentType: 'application/json',
       Key: '.site/state.json'
+    });
+    await this.putS3File({
+      ACL: 'private',
+      Body: JSON.stringify(this.config),
+      Bucket: this.privateBucketName,
+      ContentType: 'application/json',
+      Key: '.site/config.json'
     });
   }
   saveState() {

@@ -45,6 +45,9 @@ async function deploy() {
     // deploy api
     await Carolina.deployAPI();
 
+    // write frontend config file with API url
+    await Carolina.writeFrontEndConfigFile();
+
     console.log(Carolina.state);
     await Carolina.putState();
   }
