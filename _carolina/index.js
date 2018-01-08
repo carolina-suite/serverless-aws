@@ -822,7 +822,8 @@ class CarolinaLib {
   async writeFrontEndConfigFile() {
     var lines = [];
     lines.push(`var config = {`);
-    lines.push(`apiEndpoint: "https://${this.state.apiID}.execute-api.${this.config.awsRegion}.amazonaws.com/api/"`);
+    lines.push(`apiEndpoint: "https://${this.state.apiID}.execute-api.${this.config.awsRegion}.amazonaws.com/api/",`);
+    lines.push(`siteName: "${this.config.name}"`);
     lines.push('};');
     lines.push('export default config;');
     fs.writeFileSync(`apps/_carolina/src/config.js`, lines.join('\n'));
