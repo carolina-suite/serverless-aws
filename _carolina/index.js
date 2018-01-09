@@ -69,9 +69,6 @@ class CarolinaLib {
   }
 
   async createTables() {
-    if (!this.state.createdTables) {
-      this.state.createdTables = [];
-    }
     for (var i = 0; i < this.allApps.length; ++i) {
 
       var self = this;
@@ -81,7 +78,7 @@ class CarolinaLib {
         walk(`apps/${appName}/models`).map(async function(fpath) {
 
           var modelName = fpath.split(`apps/${appName}/models/`)[1].split('.yml')[0];
-          if (self.state.createdTables.indexOf(`${appName}_${modelName}`) != -1) { return; }
+          if (self.state.createdTables.indexOf(`${appName}_${modelName}`) != -1) { return null; }
 
           var tableName = `${self.config.slug}_${self.state.siteSuffix}_${appName}_${modelName}`;
           var modelConfig = yaml.load(fpath);
@@ -804,7 +801,7 @@ class CarolinaLib {
   }
 
   async enableEndpointCors(app, serviceName) {
-
+    
     if (this.state.corsEnabledEndpoints.indexOf(`${app}_${serviceName}`) != -1) {
       return null;
     }
@@ -821,17 +818,58 @@ class CarolinaLib {
         restApiId: self.state.apiID
       };
       self.APIGateway.putMethod(params, function(err, data) {
+        if (err) console.log(err);
         var params = {
           httpMethod: 'OPTIONS',
-          integrationHttpMethod: 'OPTIONS',
           resourceId: resourceId,
           restApiId: self.state.apiID,
-          type: 'AWS_PROXY',
-          uri: uri
+          type: 'MOCK',
+          cacheKeyParameters: [],
+          cacheNamespace: resourceId,
+          passthroughBehavior: 'WHEN_NO_MATCH',
+          requestTemplates: {
+            'application/json': '{"statusCode": 200}'
+          }
         };
         self.APIGateway.putIntegration(params, function(err, data) {
-          if (err) reject(err);
-          else resolve(data);
+          if (err) console.log(err);
+          var params = {
+            httpMethod: 'OPTIONS',
+            resourceId: resourceId,
+            restApiId: self.state.apiID,
+            statusCode: '200',
+            responseParameters: {
+              'method.response.header.Access-Control-Allow-Headers': true,
+              'method.response.header.Access-Control-Allow-Methods': true,
+              'method.response.header.Access-Control-Allow-Origin': true
+            },
+            responseModels: {
+              'application/json': "Empty"
+            }
+          };
+          self.APIGateway.putMethodResponse(params, function(err, data) {
+            if (err) console.log(err);
+            var params = {
+              httpMethod: 'OPTIONS',
+              resourceId: resourceId,
+              restApiId: self.state.apiID,
+              statusCode: '200',
+              selectionPattern: '-',
+              responseParameters: {
+                'method.response.header.Access-Control-Allow-Headers': "'Content-Type'",
+                'method.response.header.Access-Control-Allow-Methods': "'POST,OPTIONS'",
+                'method.response.header.Access-Control-Allow-Origin': "'*'"
+              }
+            };
+            self.APIGateway.putIntegrationResponse(params, function(err, data) {
+              if (err) reject(err);
+              else {
+                self.state.corsEnabledEndpoints.push(`${app}_${serviceName}`);
+                console.log(`CORS enabled for http_${app}_${serviceName}.`);
+                resolve(data);
+              }
+            });
+          });
         });
       });
     })
@@ -848,7 +886,7 @@ class CarolinaLib {
             await this.createEndpoint(appName, httpPackage);
             await this.createEndpointMethod(appName, httpPackage);
             await this.createEndpointIntegration(appName, httpPackage);
-            // await this.enableEndpointCors(appName, httpPackage);
+            await this.enableEndpointCors(appName, httpPackage);
           }
         }
       }
