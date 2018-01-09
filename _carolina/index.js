@@ -796,10 +796,45 @@ class CarolinaLib {
         if (err) reject(err);
         else {
           self.state.createdIntegrations.push(`${app}_${serviceName}`);
+          console.log(`Created integration for POST to ${app}_${serviceName}.`);
           resolve(data);
         }
       });
     });
+  }
+
+  async enableEndpointCors(app, serviceName) {
+
+    if (this.state.corsEnabledEndpoints.indexOf(`${app}_${serviceName}`) != -1) {
+      return null;
+    }
+    var self = this;
+    var resourceId = this.state.createdEndpoints[`${app}_${serviceName}`];
+    var functionArn = await this.getFunctionArn('_carolina', 'CorsEndpoint');
+    var uri = `arn:aws:apigateway:${this.config.awsRegion}:lambda:path/2015-03-31/functions/${functionArn}/invocations`;
+
+    return new Promise(function(resolve, reject) {
+      var params = {
+        authorizationType: 'NONE',
+        httpMethod: 'OPTIONS',
+        resourceId: resourceId,
+        restApiId: self.state.apiID
+      };
+      self.APIGateway.putMethod(params, function(err, data) {
+        var params = {
+          httpMethod: 'OPTIONS',
+          integrationHttpMethod: 'OPTIONS',
+          resourceId: resourceId,
+          restApiId: self.state.apiID,
+          type: 'AWS_PROXY',
+          uri: uri
+        };
+        self.APIGateway.putIntegration(params, function(err, data) {
+          if (err) reject(err);
+          else resolve(data);
+        });
+      });
+    })
   }
 
   async createEndpoints() {
@@ -813,6 +848,7 @@ class CarolinaLib {
             await this.createEndpoint(appName, httpPackage);
             await this.createEndpointMethod(appName, httpPackage);
             await this.createEndpointIntegration(appName, httpPackage);
+            // await this.enableEndpointCors(appName, httpPackage);
           }
         }
       }
@@ -842,7 +878,7 @@ class CarolinaLib {
         if (err) reject(err);
         else {
           console.log("API deployed.");
-          console.log(data);
+          //console.log(data);
           resolve(data);
         }
       });

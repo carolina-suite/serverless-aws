@@ -3,6 +3,7 @@ var generateToken = require('./generate-token');
 
 module.exports = function() {
   return {
+    corsEnabledEndpoints: [],
     createdTables: [],
     createdEndpoints: {},
     createdHttpFunctions: [],
