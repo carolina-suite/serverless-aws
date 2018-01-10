@@ -99,6 +99,9 @@ this.sendResponse = function(res, cb) {
   cb(null, {
     statusCode: 200,
     headers: {
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'POST,ORIGIN',
+      'Access-Control-Allow-Origin': '*',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(res)

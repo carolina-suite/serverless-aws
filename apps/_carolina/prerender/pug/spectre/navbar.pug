@@ -1,0 +1,20 @@
+.container
+  .columns
+    .col-2
+    .col-8
+      header.navbar
+        section.navbar-section
+          
+          a.navbar-brand.mr-2(href="/")= site.name
+          
+          each item in site.mainMenu
+            if item.isDropdown
+              .dropdown
+                a.btn.btn-link.dropdown-toggle(href="#" tabindex="0")= item.title
+                  i.icon.icon-caret
+                ul.menu
+                  each subitem in item.menu
+                    li.menu-item
+                      a(href=subitem.link)= subitem.title
+            else
+              a.btn.btn-link(href=item.link)= item.title

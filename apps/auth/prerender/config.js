@@ -3,7 +3,7 @@ module.exports = {
   prerenderData: {},
   prerenderFiles: [
     {
-      'in': '_carolina/app.pug',
+      'in': '_carolina/spectre/app.pug',
       out: 'index.html',
       data: {
         bootswatchTheme: 'sketchy',

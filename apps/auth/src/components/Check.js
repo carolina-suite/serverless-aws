@@ -19,6 +19,7 @@ class Check extends Component {
 
   async componentDidMount() {
     var check = await Auth.check();
+    console.log(check);
     if (check) window.location.hash = `#/profile`;
     else window.location.hash = `#/login`;
   }

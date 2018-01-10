@@ -9,10 +9,14 @@ class Main extends Component {
   render() {
     return (
       <div className="container">
-        <Switch>
-          <Route exact path="/" component={Check} />
-          <Route exact path="/login" component={Login} />
-        </Switch>
+        <div className="columns">
+          <div className="col-6 col-mx-auto">
+            <Switch>
+              <Route exact path="/" component={Check} />
+              <Route exact path="/login" component={Login} />
+            </Switch>
+          </div>
+        </div>
       </div>
     )
   }

@@ -37,6 +37,8 @@ async function deploy() {
     await Carolina.fillPublicBucket();
     await Carolina.fillPrivateBucket();
 
+    await sleepPromise(5000);
+
     // create/update Lambda functions
     await Carolina.putHttpPackages();
     await Carolina.putSvcPackages();

@@ -399,24 +399,28 @@ class CarolinaLib {
     for (var i = 0; i < apps.length; ++i) {
       var appName = apps[i];
       if (fs.existsSync(`apps/${appName}/private`)) {
-        walk(`apps/${appName}/private`).map(async function(fpath) {
+        await Promise.all([
+          walk(`apps/${appName}/private`).map(function(fpath) {
 
-          var mType = mime.lookup(fpath);
-          if (!mType) mType = 'application/octet-stream';
+            var mType = mime.lookup(fpath);
+            if (!mType) mType = 'application/octet-stream';
 
-          var key = `${appName}/` + fpath.split(`apps/${appName}/private/`)[1];
-          var params = {
-            ACL: 'private',
-            Body: fs.readFileSync(fpath),
-            Bucket: self.privateBucketName,
-            ContentType: mType,
-            Key: key
-          };
+            var key = `${appName}/` + fpath.split(`apps/${appName}/private/`)[1];
+            var params = {
+              ACL: 'private',
+              Body: fs.readFileSync(fpath),
+              Bucket: self.privateBucketName,
+              ContentType: mType,
+              Key: key
+            };
 
-          await self.putS3File(params);
-        });
+            console.log(`Placing file in Private S3 Bucket: ${params.Key}`);
+            return self.putS3File(params);
+          })
+        ]);
       }
     }
+    console.log(`Filled Private S3 Bucket.`);
   }
 
   async createMasterRole() {
@@ -493,7 +497,7 @@ class CarolinaLib {
        self.Lambda.updateFunctionCode(params, function(err, data) {
          if (err) reject(err);
          else {
-           console.log(`Updating code for Lambda function http_${app}_${serviceName}.`);
+           console.log(`Updated code for Lambda function http_${app}_${serviceName}.`);
            resolve(data);
          }
        });
@@ -580,6 +584,8 @@ class CarolinaLib {
 
   async updateSvcPackage(app, serviceName) {
 
+    console.log(`Updating code for Lambda function svc_${app}_${serviceName}.`);
+
     var self = this;
 
     return new Promise(function(resolve, reject) {
@@ -591,7 +597,7 @@ class CarolinaLib {
        self.Lambda.updateFunctionCode(params, function(err, data) {
          if (err) reject(err);
          else {
-           console.log(`Updating code for Lambda function svc_${app}_${serviceName}.`);
+           console.log(`Updated code for Lambda function svc_${app}_${serviceName}.`);
            resolve(data);
          }
        });
@@ -801,14 +807,14 @@ class CarolinaLib {
   }
 
   async enableEndpointCors(app, serviceName) {
-    
+    /**
     if (this.state.corsEnabledEndpoints.indexOf(`${app}_${serviceName}`) != -1) {
       return null;
-    }
+    }*/
     var self = this;
     var resourceId = this.state.createdEndpoints[`${app}_${serviceName}`];
-    var functionArn = await this.getFunctionArn('_carolina', 'CorsEndpoint');
-    var uri = `arn:aws:apigateway:${this.config.awsRegion}:lambda:path/2015-03-31/functions/${functionArn}/invocations`;
+    // var functionArn = await this.getFunctionArn('_carolina', 'CorsEndpoint');
+    // var uri = `arn:aws:apigateway:${this.config.awsRegion}:lambda:path/2015-03-31/functions/${functionArn}/invocations`;
 
     return new Promise(function(resolve, reject) {
       var params = {
@@ -862,7 +868,7 @@ class CarolinaLib {
               }
             };
             self.APIGateway.putIntegrationResponse(params, function(err, data) {
-              if (err) reject(err);
+              if (err) console.log(err);
               else {
                 self.state.corsEnabledEndpoints.push(`${app}_${serviceName}`);
                 console.log(`CORS enabled for http_${app}_${serviceName}.`);
@@ -883,6 +889,7 @@ class CarolinaLib {
         for (var j = 0; j < httpPackages.length; ++j) {
           var httpPackage = httpPackages[j];
           if (fs.existsSync(`apps/${appName}/private/http/${httpPackage}.zip`)) {
+            console.log(`Setting up http_${appName}_${httpPackage}.`);
             await this.createEndpoint(appName, httpPackage);
             await this.createEndpointMethod(appName, httpPackage);
             await this.createEndpointIntegration(appName, httpPackage);
