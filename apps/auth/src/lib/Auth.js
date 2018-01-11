@@ -28,6 +28,20 @@ class AuthLib {
       }
     });
   }
+  async goNext() {
+    this.db.getItem('next')
+    .then(function(nxt) {
+      if (nxt) {
+        window.location = next;
+      }
+      else {
+        window.location.hash = '#/profile';
+      }
+    })
+    .catch(function(err) {
+      window.location.hash = '#/profile';
+    });
+  }
   async callAPI(app, api, data) {
 
     if (!data) data = {};
@@ -65,10 +79,9 @@ class AuthLib {
     if (res.token) {
       this.db.setItem('token', res.token);
       this.token = res.token;
-      return true;
     }
 
-    return false;
+    return res;
   }
   async logout() {
     this.db.removeItem('token');
@@ -82,12 +95,7 @@ class AuthLib {
       password: password,
       emailAddress: emailAddress
     });
-    if (res.message) {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return res;
   }
   async updatePassword(oldPassword, newPassword) {
     var res = await this.callAPI('auth', 'api', {

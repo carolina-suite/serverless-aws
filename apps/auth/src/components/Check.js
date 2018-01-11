@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { render } from 'react-dom';
 
 import config from '../../../_carolina/src/config';
+import Toast from '../../../_carolina/src/components/spectre/Toast';
 
 import Auth from '../lib/Auth';
 

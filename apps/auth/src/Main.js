@@ -4,6 +4,7 @@ import  { Route, Switch } from 'react-router-dom';
 
 import Check from './components/Check';
 import Login from './components/Login';
+import Register from './components/Register';
 
 class Main extends Component {
   render() {
@@ -14,6 +15,7 @@ class Main extends Component {
             <Switch>
               <Route exact path="/" component={Check} />
               <Route exact path="/login" component={Login} />
+              <Route exact path="/register" component={Register} />
             </Switch>
           </div>
         </div>

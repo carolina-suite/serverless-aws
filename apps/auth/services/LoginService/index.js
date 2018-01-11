@@ -212,7 +212,7 @@ function register(username, password, emailAddress, cb) {
       cb(data.errorMessage);
     }
     else
-      cb(null, { message: "Username created." });
+      cb(null, { success: true });
   })
   .catch(function(err) {
     cb(err);

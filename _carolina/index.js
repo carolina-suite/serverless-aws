@@ -807,10 +807,10 @@ class CarolinaLib {
   }
 
   async enableEndpointCors(app, serviceName) {
-    /**
+    
     if (this.state.corsEnabledEndpoints.indexOf(`${app}_${serviceName}`) != -1) {
       return null;
-    }*/
+    }
     var self = this;
     var resourceId = this.state.createdEndpoints[`${app}_${serviceName}`];
     // var functionArn = await this.getFunctionArn('_carolina', 'CorsEndpoint');
