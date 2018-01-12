@@ -165,6 +165,7 @@ function login(username, password, cb) {
     }, state.secret);
 
     cb(null, {
+      success: true,
       token: token
     });
   })

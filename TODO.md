@@ -1,6 +1,5 @@
 
 * Auth Application
-  * Figure out enabling CORS (see what is done when it is done by the GUI)
 * Document Auth App
 * Admin Application
 * Document Admin App

@@ -42,12 +42,19 @@ class Login extends Component {
       errorMessage: null
     });
 
-    var loginSuccess = await Auth.login(this.state.username,
+    var res = await Auth.login(this.state.username,
        this.state.password);
-    if(!loginSuccess) {
-      this.setState({
-        errorMessage: "There was an error with that username/password combination."
-      });
+    if(!res.success) {
+      if (res.errorMessage) {
+        this.setState({
+          errorMessage: res.errorMessage
+        });
+      }
+      else {
+        this.setState({
+          errorMessage: "There was an unknown error."
+        });
+      }
     }
     else {
       Auth.goNext();
@@ -93,6 +100,10 @@ class Login extends Component {
 
           <button className="btn btn-primary" type="submit">Submit</button>
         </form>
+
+        <p>
+          <Link to="/forgot">I forgot my password.</Link>
+        </p>
       </div>
     )
   }

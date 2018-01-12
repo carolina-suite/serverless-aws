@@ -69,7 +69,7 @@ class Register extends Component {
     }
     else {
       var res = await Auth.register(this.state.username, this.state.password1,
-        this.email);
+        this.state.email);
       if (!res.success) {
         if (res.errorMessage) {
           this.setState({
@@ -112,7 +112,7 @@ class Register extends Component {
 
         {alert}
 
-        <form clasName="form-horizontal" onSubmit={this.handleSubmit}>
+        <form className="form-horizontal" onSubmit={this.handleSubmit}>
           <div className="columns form-group">
             <div className="col-3">
               <label className="form-label">Username</label>

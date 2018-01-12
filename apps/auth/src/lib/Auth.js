@@ -46,6 +46,10 @@ class AuthLib {
 
     if (!data) data = {};
     if (this.token) data.token = this.token;
+    else {
+      var t = await this.db.getItem('token');
+      if (t) data.token = t;
+    }
 
     var res = await this.axios.post(`${config.apiEndpoint}${app}_${api}`, data);
     return res.data;
@@ -103,12 +107,7 @@ class AuthLib {
       oldPassword: oldPassword,
       newPassword: newPassword
     });
-    if (res.success) {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return res;
   }
   async updateProfile(info) {
     var res = await this.callAPI('auth', 'api', {
