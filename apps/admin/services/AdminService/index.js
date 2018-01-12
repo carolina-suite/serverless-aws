@@ -31,6 +31,22 @@ function deleteObject(app, model, value, cb) {
   });
 }
 
+function listObjects(app, model, pageSize, page, cb) {
+  C.invokeService('_carolina', 'ModelService', {
+    action: 'list',
+    app: app,
+    model: model,
+    pageSize: pageSize,
+    page: page
+  })
+  .then(function(items) {
+    cb(null, items);
+  })
+  .catch(function(err) {
+    cb(err);
+  });
+}
+
 function listModels(cb) {
   C.invokeService('_carolina', 'ModelService', {
     action: 'list-models'
@@ -51,6 +67,9 @@ exports.handler = function(event, context, callback) {
       break;
     case 'delete':
       deleteObject(event.app, event.model, event.value, callback);
+      break;
+    case 'list':
+      listObjects(event.app, event.model, event.pageSize, event.page, callback);
       break;
     case 'list-models':
       listModels(callback);
