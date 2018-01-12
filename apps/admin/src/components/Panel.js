@@ -52,9 +52,6 @@ class Panel extends Component {
   render() {
     return (
       <div>
-        {this.state.username &&
-          <UserInfo username={this.state.username} />
-        }
         {this.state.apps.map((app) => (
           <AppCard appName={app.name} models={app.models} hasSettings={app.settings} />
         ))}

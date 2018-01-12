@@ -10,6 +10,7 @@
   * [Prerender Templates](./PRERENDER.md)
   * [Public Files](./PUBLIC.md)
   * [Private Files](./PRIVATE.md)
+  * [Model Schemas](./MODELS.md)
   * [Http Endpoints](./HTTP.md)
   * [Lambda Services](./SERVICES.md)
   * [Webpack](./WEBPACK.md)

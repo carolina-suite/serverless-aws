@@ -8,8 +8,14 @@ class Schema {
     this.keyField = schema.keyField;
     this.singleton = false;
     if (schema.singleton) this.singleton = true;
-    this.fields = {};
 
+    if (schema.adminFields) {
+      this.adminFields = schema.adminFields;
+    }
+    else {
+      this.adminFields = [this.keyField];
+    }
+    this.fields = {};
     for (var prop in schema.fields) {
       this.fields[prop] = new Fields[`${schema.fields[prop].type}Field`](schema.fields[prop], prop);
     }
@@ -57,6 +63,21 @@ class Schema {
         o[prop] = this.fields[prop].default;
       }
     }
+
+    return o;
+  }
+  toJSON() {
+
+    var o = {
+      keyField: this.keyField,
+      adminFields: this.adminFields,
+      singleton: this.singleton,
+      fields: {}
+    };
+    
+    for (var prop in this.fields) {
+      o.fields[prop] = this.fields[prop].toJSON()
+    };
 
     return o;
   }

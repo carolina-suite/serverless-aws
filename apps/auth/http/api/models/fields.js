@@ -4,6 +4,7 @@ class Field {
   constructor(obj, n) {
 
     this.name = n;
+    this.type = obj.type;
 
     if (obj.hasOwnProperty('required')) this.required = obj.required;
     else this.required = false;
@@ -11,10 +12,23 @@ class Field {
     else this.secret = false;
     if (obj.hasOwnProperty('unique')) this.unique = obj.unique;
     else this.unique = false;
+    if (obj.hasOwnProperty('verbose')) this.verbose = obj.verbose
+    else this.verbose = this.name;
   }
 
   fromDB(o) {
     return o['S'];
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      type: this.type,
+      required: this.required,
+      secret: this.secret,
+      unique: this.unique,
+      verbose: this.verbose
+    };
   }
 }
 

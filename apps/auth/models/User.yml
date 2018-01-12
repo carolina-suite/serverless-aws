@@ -1,11 +1,16 @@
 
 modelName: User
 keyField: username
+adminFields:
+  - username
+  - emailAddress
+  - isAdmin
 fields:
   username:
     type: String
     required: true
     unique: true
+    verbose: Username
   password:
     type: String
     secret: true
@@ -17,6 +22,8 @@ fields:
   emailAddress:
     type: EmailAddress
     unique: true
+    verbose: E-Mail Address
   isAdmin:
     type: Boolean
     default: false
+    verbose: Is Admin?

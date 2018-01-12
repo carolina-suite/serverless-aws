@@ -31,6 +31,20 @@ function deleteObject(app, model, value, cb) {
   });
 }
 
+function getSchema(app, model, cb) {
+  C.invokeService('_carolina', 'ModelService', {
+    action: 'get-model-schema',
+    app: app,
+    model: model
+  })
+  .then(function(s) {
+    cb(null, s);
+  })
+  .catch(function(err) {
+    cb(err);
+  });
+}
+
 function listObjects(app, model, pageSize, page, cb) {
   C.invokeService('_carolina', 'ModelService', {
     action: 'list',
@@ -73,6 +87,9 @@ exports.handler = function(event, context, callback) {
       break;
     case 'list-models':
       listModels(callback);
+      break;
+    case 'schema':
+      getSchema(event.app, event.model, callback);
       break;
     default:
       callback("Invalid action provided.");

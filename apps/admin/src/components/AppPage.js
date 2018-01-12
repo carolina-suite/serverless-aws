@@ -22,11 +22,6 @@ class AppPage extends Component {
 
   async componentDidMount() {
 
-    var user = await Auth.getUser();
-    this.setState({
-      username: user.username
-    });
-
     var models = await Auth.callAPI('admin', 'api', {
       action: 'list-models'
     });
@@ -61,10 +56,6 @@ class AppPage extends Component {
   render() {
     return(
       <div>
-
-        {this.state.username &&
-          <UserInfo username={this.state.username} />
-        }
 
         <ul className="breadcrumb">
           <li className="breadcrumb-item">

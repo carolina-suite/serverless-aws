@@ -12,7 +12,8 @@ var dynamoDB = new aws.DynamoDB({
 function getModelSchema(app, model, cb) {
   C.getModelSchema(app, model)
   .then(function(schemaYaml) {
-    cb(null, yaml.parse(schemaYaml));
+    var schema = new Schema(yaml.parse(schemaYaml));
+    cb(null, schema.toJSON());
   });
 }
 
