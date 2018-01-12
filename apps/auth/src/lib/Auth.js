@@ -69,9 +69,11 @@ class AuthLib {
     });
   }
   async getUser() {
-    return await this.callAPI('auth', 'api', {
+    if (this.currentUser) return this.currentUser;
+    var user = await this.callAPI('auth', 'api', {
       action: 'get-user'
     });
+    return user;
   }
   async login(username, password) {
 

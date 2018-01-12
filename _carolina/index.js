@@ -340,43 +340,49 @@ class CarolinaLib {
 
     var self = this;
 
-    // first copy home files
-    walk('apps/home/public').map(async function(fpath) {
+    await Promise.all([
+      // first copy home files
+      walk('apps/home/public').map(function(fpath) {
 
-      var mType = mime.lookup(fpath);
-      if (!mType) mType = 'application/octet-stream';
+        var mType = mime.lookup(fpath);
+        if (!mType) mType = 'application/octet-stream';
 
-      var key = fpath.split('apps/home/public/')[1];
-      var params = {
-        ACL: 'public-read',
-        Body: fs.readFileSync(fpath),
-        Bucket: self.publicBucketName,
-        ContentType: mType,
-        Key: key
-      };
+        var key = fpath.split('apps/home/public/')[1];
+        var params = {
+          ACL: 'public-read',
+          Body: fs.readFileSync(fpath),
+          Bucket: self.publicBucketName,
+          ContentType: mType,
+          Key: key
+        };
 
-      await self.putS3File(params);
-    });
+        console.log(`Placing file in Public S3 Bucket: ${params.Key}`);
+        return self.putS3File(params);
+      })
+    ]);
 
     for (var i = 0; i < this.config.apps.length; ++i) {
       var appName = this.config.apps[i];
       if (fs.existsSync(`apps/${appName}/public`)) {
-        walk(`apps/${appName}/public`).map(async function(fpath) {
+        await Promise.all([
+          walk(`apps/${appName}/public`).map(function(fpath) {
 
-          var mType = mime.lookup(fpath);
-          if (!mType) mType = 'application/octet-stream';
+            var mType = mime.lookup(fpath);
+            if (!mType) mType = 'application/octet-stream';
 
-          var key = `${appName}/` + fpath.split(`apps/${appName}/public/`)[1];
-          var params = {
-            ACL: 'public-read',
-            Body: fs.readFileSync(fpath),
-            Bucket: self.publicBucketName,
-            ContentType: mType,
-            Key: key
-          };
+            var key = `${appName}/` + fpath.split(`apps/${appName}/public/`)[1];
+            var params = {
+              ACL: 'public-read',
+              Body: fs.readFileSync(fpath),
+              Bucket: self.publicBucketName,
+              ContentType: mType,
+              Key: key
+            };
 
-          await self.putS3File(params);
-        });
+            console.log(`Placing file in Public S3 Bucket: ${params.Key}`);
+            return self.putS3File(params);
+          })
+        ]);
       }
     }
   }
@@ -807,7 +813,7 @@ class CarolinaLib {
   }
 
   async enableEndpointCors(app, serviceName) {
-    
+
     if (this.state.corsEnabledEndpoints.indexOf(`${app}_${serviceName}`) != -1) {
       return null;
     }

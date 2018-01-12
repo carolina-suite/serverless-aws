@@ -1,0 +1,13 @@
+
+modelName: Settings
+keyField: name
+keyName: AdminSettings
+singleton: true
+fields:
+  name:
+    type: String
+    default: AdminSettings
+    edit: false
+  registrationOpen:
+    type: Boolean
+    default: true

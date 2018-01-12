@@ -21,6 +21,7 @@ function deleteObject(app, model, value, cb) {
   .then(function(schemaYaml) {
 
     var schema = new Schema(yaml.parse(schemaYaml));
+    if (schema.singleton) return cb("Singletons cannot be deleted.");
     var params = {
       Key: schema.getLookupKey(value),
       TableName: C.getTablePrefix() + app + '_' + model
@@ -43,6 +44,7 @@ function insertObject(app, model, obj, cb) {
   .then(function(schemaYaml) {
 
     var schema = new Schema(yaml.parse(schemaYaml));
+    if (schema.singleton) return cb("Singletons cannot be created.");
     var params = {
       Key: schema.getLookupKey(obj[schema.keyField]),
       TableName: C.getTablePrefix() + app + '_' + model
@@ -72,16 +74,17 @@ function listModels(cb) {
   C.listPrivateFiles('_carolina/models/')
   .then(function(contents) {
 
-    var models = [];
+    var models = {};
     for (var i = 0; i < contents.length; ++i) {
 
       var splitKey = contents[i].Key.split('/');
       var fileName = splitKey[3];
-      var m = {};
+      var appName = splitKey[2];
 
-      m.app = splitKey[2];
-      m.model = fileName.slice(0, fileName.indexOf('.yml'));
-      models.push(m);
+      var modelName = fileName.slice(0, fileName.indexOf('.yml'));
+
+      if (!models.hasOwnProperty(appName)) models[appName] = [];
+      models[appName].push(modelName);
     }
 
     cb(null, models);
@@ -107,7 +110,8 @@ var lookupObject = function(app, model, value, cb) {
         if (data.Item)
           cb(null, schema.fromDB(data.Item));
         else {
-          cb(null, null);
+          if (schema.singleton) cb(null, schema.newSingleton());
+          else cb(null, null);
         }
       }
     });

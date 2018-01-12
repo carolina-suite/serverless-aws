@@ -25,6 +25,7 @@ module.exports = {
   ],
 
   apps: [
+    'admin',
     'auth',
     'docs_example'
   ]

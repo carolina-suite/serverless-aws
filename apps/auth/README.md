@@ -1,5 +1,4 @@
 
-
 # Authentication App #
 
 This is an authentication app for managing Users and allowing them to log in

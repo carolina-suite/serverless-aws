@@ -4,8 +4,12 @@ var Fields = require('./fields');
 class Schema {
 
   constructor(schema) {
+
     this.keyField = schema.keyField;
+    this.singleton = false;
+    if (schema.singleton) this.singleton = true;
     this.fields = {};
+
     for (var prop in schema.fields) {
       this.fields[prop] = new Fields[`${schema.fields[prop].type}Field`](schema.fields[prop], prop);
     }
@@ -49,9 +53,15 @@ class Schema {
       if (obj.hasOwnProperty(prop)) {
         o[prop] = this.fields[prop].fromDB(obj[prop]);
       }
+      else if (this.fields[prop].hasOwnProperty('default')) {
+        o[prop] = this.fields[prop].default;
+      }
     }
 
     return o;
+  }
+  newSingleton() {
+    return this.fromDB({});
   }
 }
 

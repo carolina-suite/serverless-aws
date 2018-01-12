@@ -1,6 +1,5 @@
 
-* Auth Application
-* Document Auth App
+* Settings System (Singletons)
 * Admin Application
 * Document Admin App
 * Cron Job Lamda Functions
