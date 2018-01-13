@@ -1,9 +1,11 @@
 
 * Settings System (Singletons)
 * Admin Application
+* App Settings Command Functions
 * Document Admin App
 * Cron Job Lamda Functions
-* Docker Services on EC2 (for a not-so-serverless experience)
+* Blog App
+* Document Blog App
 * Document `_carolina` App
 * Add to Carolina Suite
 

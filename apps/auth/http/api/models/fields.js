@@ -6,6 +6,8 @@ class Field {
     this.name = n;
     this.type = obj.type;
 
+    if (obj.hasOwnProperty('description')) this.description = obj.description;
+    else this.description = '';
     if (obj.hasOwnProperty('required')) this.required = obj.required;
     else this.required = false;
     if (obj.hasOwnProperty('secret')) this.secret = obj.secret;

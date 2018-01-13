@@ -56,6 +56,10 @@ function check(token, cb) {
   });
 }
 
+function emailUserList(emailAddress, cb) {
+  
+}
+
 function forgot(username, email, cb) {
   C.getSiteConfig()
   .then(function(config) {

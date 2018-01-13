@@ -4,6 +4,8 @@ import  { Link } from 'react-router-dom';
 
 import Auth from '../../../auth/src/lib/Auth';
 
+import ObjectEdit from './ObjectEdit';
+
 class CreateObject extends Component {
 
   constructor(props) {
@@ -63,6 +65,7 @@ class CreateObject extends Component {
   render() {
     return (
       <div>
+
         <ul className="breadcrumb">
           <li className="breadcrumb-item">
             <Link to="/panel">Admin</Link>
@@ -77,6 +80,12 @@ class CreateObject extends Component {
             Create New
           </li>
         </ul>
+
+        <br />
+
+        {!!(this.state.appName && this.state.modelName && this.state.schema) &&
+          <ObjectEdit isNew={true} obj={this.state.obj} schema={this.state.schema} />
+        }
       </div>
     )
   }

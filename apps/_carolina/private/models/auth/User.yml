@@ -26,4 +26,5 @@ fields:
   isAdmin:
     type: Boolean
     default: false
+    description: Gives full access to all site data to the user.
     verbose: Is Admin?

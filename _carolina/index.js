@@ -401,9 +401,8 @@ class CarolinaLib {
     this.copyModelDefinitions();
     var self = this;
 
-    var apps = ['_carolina', 'home'].concat(this.config.apps);
-    for (var i = 0; i < apps.length; ++i) {
-      var appName = apps[i];
+    for (var i = 0; i < this.allApps.length; ++i) {
+      var appName = this.allApps[i];
       if (fs.existsSync(`apps/${appName}/private`)) {
         await Promise.all([
           walk(`apps/${appName}/private`).map(function(fpath) {

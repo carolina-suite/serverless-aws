@@ -120,12 +120,59 @@ function partialScan(app, model, pageSize, currentPage, targetPage, lastEvaluate
   });
 }
 
+function fullScan(app, model, pageSize, lastEvaluatedKey) {
+  return new Promise(function(resolve, reject) {
+    var params = {
+      Limit: pageSize,
+      TableName: C.getTablePrefix() + app + '_' + model
+    };
+    if (lastEvaluatedKey) params.ExclusiveStartKey = lastEvaluatedKey;
+    dynamoDB.scan(params, function(err, data) {
+      if (err) reject(err);
+      else {
+        if (data.Items.length == 0) {
+          resolve([]);
+        }
+        else if (!data.LastEvaluatedKey) {
+          resolve(data.Items);
+        }
+        else {
+          var firstItems = data.Items;
+          fullScan(app, model, pageSize, data.LastEvaluatedKey)
+          .then(function(items) {
+            resolve(firstItems.concat(items));
+          })
+        }
+      }
+    })
+  });
+}
+
 function listObjects(app, model, pageSize, page, cb) {
   C.getModelSchema(app, model)
   .then(function(schemaYaml) {
 
     var schema = new Schema(yaml.parse(schemaYaml));
     partialScan(app, model, pageSize, 0, page, null)
+    .then(function(data) {
+      var returnValues = [];
+      for (var i = 0; i < data.length; ++i) {
+        returnValues.push(schema.fromDB(data[i]));
+      }
+      cb(null, returnValues);
+    })
+    .catch(function(err) {
+      cb(err);
+    });
+  });
+}
+
+function listAllObjects(app, model, pageSize, cb) {
+  C.getModelSchema(app, model)
+  .then(function(schemaYaml) {
+
+    var schema = new Schema(yaml.parse(schemaYaml));
+    fullScan(app, model, pageSize, null)
     .then(function(data) {
       var returnValues = [];
       for (var i = 0; i < data.length; ++i) {
@@ -224,6 +271,9 @@ exports.handler = function(event, context, callback) {
       break;
     case 'list':
       listObjects(event.app, event.model, event.pageSize, event.page, callback);
+      break;
+    case 'list-all':
+      listAllObjects(event.app, event.model, 10, callback);
       break;
     case 'lookup':
       lookupObject(event.app, event.model, event.value, callback);

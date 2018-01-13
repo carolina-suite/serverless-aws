@@ -24,6 +24,11 @@ class AppCard extends Component {
             ))}
           </ul>
         </div>
+        <div className="card-footer">
+          <Link className="btn btn-primary" to={`/app/${this.props.appName}/settings`}>
+            <i className="icon icon-edit"></i> App Settings
+          </Link>
+        </div>
       </div>
     )
   }

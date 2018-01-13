@@ -11,3 +11,14 @@ fields:
   registrationOpen:
     type: Boolean
     default: true
+commands:
+  - name: Send User List
+    description: |
+      Sends a list of users to the specified address.
+    fields:
+      emailAddress:
+        type: EmailAddress
+    execute:
+      app: auth
+      service: LoginService
+      action: email-user-list
