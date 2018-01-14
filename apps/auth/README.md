@@ -36,6 +36,10 @@ This app makes use of the Email Service defined by the site's configuration.
 | name | String | The user's name. |
 | isAdmin | Boolean | Whether or not the user has admin rights. |
 
+**Admin Panel Commands**
+
+* *Set Password*: Set the user password to a specific value.
+
 ### Fixtures #
 
 #### Test Users #

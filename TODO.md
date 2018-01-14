@@ -1,13 +1,7 @@
 
-* Admin Application
-  * Basics
-  * Settings System (Singletons)
-  * Object View Command Functions
-  * App Settings Command Functions
 * Document Admin App
-* Cron Job Lamda Functions
-* Blog App
-* Document Blog App
+* CTF App
+* Document Ctf App
 * Document `_carolina` App
 * Add to Carolina Suite
 

@@ -52,5 +52,46 @@ admin view.
 You can list several commands in you schema. They look like this:
 
 ```yml
-
+# This example is from the built in User object
+commands:
+  - name: Set Password
+    description: |
+      Set the user's password to the provided value.
+    fields:
+      password:
+        type: String
+    execute:
+      app: auth
+      service: LoginService
+      args:
+        action: command-set-user-password
 ```
+
+You can specify fields for the command (optional) in the same way
+you specify actual database fields.
+
+An admin user will see a card for each command when viewing an object of
+this type in the admin panel.
+
+When the user submits the command with its inputs, the specified backend
+service will be called with the arguments listed under `args`, as well as
+all the user inputs labeled as the fields are called, and a `src` attribute
+defining the app, model, and keyField value of the current object.
+
+In the above example, the Admin backend will look for a "LoginService"
+in the "auth" application and call it with the following parameters:
+
+```json
+{
+  "action": "command-set-user-password",
+  "password": "<whatever the admin user typed>",
+  "src": {
+    "app": "auth",
+    "model": "User",
+    "value": "<username of current user being viewed>"
+  }
+}
+```
+
+As long as you have services set up to handle these commands (this one
+  is already ready), it will be executable from the admin panel.

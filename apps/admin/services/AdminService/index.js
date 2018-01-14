@@ -28,7 +28,7 @@ function create(app, model, obj, cb) {
 
 function deleteObject(app, model, value, cb) {
   C.invokeService('_carolina', 'ModelService', {
-    action: 'create',
+    action: 'delete',
     app: app,
     model: model,
     value: value

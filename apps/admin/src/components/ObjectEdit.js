@@ -20,6 +20,7 @@ class ObjectEdit extends Component {
     var schema = props.schema;
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
 
     var fields = [];
@@ -66,6 +67,31 @@ class ObjectEdit extends Component {
       alert("Unknown error.");
     }
   }
+  async handleDelete(e) {
+
+    e.preventDefault();
+
+    var params = {
+      action: 'delete',
+      app: this.props.appName,
+      model: this.props.modelName,
+      value: this.state.obj[this.props.schema.keyField]
+    };
+
+    var res = await Auth.callAPI('admin', 'api', params);
+
+    if (res.success) {
+      if (this.props.modelName == 'Settings') window.location.hash = `#/app/${this.props.appName}`;
+      else window.location.hash = `#/model/${this.props.appName}/${this.props.modelName}`;
+    }
+    else if (res.errorMessage) {
+      alert(res.errorMessage);
+    }
+    else {
+      alert("Unknown error.");
+    }
+  }
+
 
   render() {
     return (
@@ -80,6 +106,9 @@ class ObjectEdit extends Component {
           }
           {!(this.props.isNew) &&
             <button className="btn btn-primary" onClick={this.handleSubmit}>Save</button>
+          }
+          {!!(!this.props.isNew && !this.props.schema.singleton) &&
+            <button className="btn btn-error" onClick={this.handleDelete}>Delete</button>
           }
         </form>
       </div>
