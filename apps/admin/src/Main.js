@@ -11,7 +11,9 @@ import Check from './components/Check';
 import CreateObject from './components/CreateObject';
 import ModelPage from './components/ModelPage';
 import NotAdmin from './components/NotAdmin';
+import ObjectPage from './components/ObjectPage';
 import Panel from './components/Panel';
+import SettingsPage from './components/SettingsPage';
 import UserInfo from './components/UserInfo';
 
 class Main extends Component {
@@ -48,9 +50,11 @@ class Main extends Component {
             <Switch>
               <Route exact path="/" component={Check} />
               <Route exact path="/app/:appName" component={AppPage} />
+              <Route exact path='/app/:appName/settings' component={SettingsPage} />
               <Route exact path="/model/:appName/:modelName" component={ModelPage} />
               <Route exact path="/model/:appName/:modelName/create" component={CreateObject} />
               <Route exact path="/notadmin" component={NotAdmin} />
+              <Route exact path="/object/:appName/:modelName/:objectKey" component={ObjectPage} />
               <Route exact path='/panel' component={Panel} />
             </Switch>
           </div>

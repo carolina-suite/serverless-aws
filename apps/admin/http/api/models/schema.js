@@ -19,6 +19,10 @@ class Schema {
     for (var prop in schema.fields) {
       this.fields[prop] = new Fields[`${schema.fields[prop].type}Field`](schema.fields[prop], prop);
     }
+
+    this.fields[this.keyField].edit = false;
+    this.fields[this.keyField].required = true;
+    this.fields[this.keyField].unique = true;
   }
 
   getLookupKey(v) {
@@ -74,7 +78,7 @@ class Schema {
       singleton: this.singleton,
       fields: {}
     };
-    
+
     for (var prop in this.fields) {
       o.fields[prop] = this.fields[prop].toJSON()
     };

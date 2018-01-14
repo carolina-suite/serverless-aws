@@ -4,6 +4,7 @@ import  { Link } from 'react-router-dom';
 
 import Auth from '../../../auth/src/lib/Auth';
 
+import Admin from '../lib/Admin';
 import ObjectEdit from './ObjectEdit';
 
 class CreateObject extends Component {
@@ -36,23 +37,8 @@ class CreateObject extends Component {
       app: app,
       model: model
     });
-    var starterObject = {};
-    for (var property in s.fields) {
-      if (s.fields[property].hasOwnProperty('default')) {
-        starterObject[property] = s.fields[property].default;
-      }
-      else {
-        if (s.fields[property].type == 'Boolean') {
-          starterObject[property] = false;
-        }
-        if (s.fields[property].type == 'EmailAddress') {
-          starterObject[property] = '';
-        }
-        if (s.fields[property].type == 'String') {
-          starterObject[property] = '';
-        }
-      }
-    }
+
+    var starterObject = Admin.getStarterObjectFromSchema(s);
 
     this.setState({
       appName: app,
@@ -84,7 +70,7 @@ class CreateObject extends Component {
         <br />
 
         {!!(this.state.appName && this.state.modelName && this.state.schema) &&
-          <ObjectEdit isNew={true} obj={this.state.obj} schema={this.state.schema} />
+          <ObjectEdit isNew={true} obj={this.state.obj} schema={this.state.schema} appName={this.state.appName} modelName={this.state.modelName} />
         }
       </div>
     )

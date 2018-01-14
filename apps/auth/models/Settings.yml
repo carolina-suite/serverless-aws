@@ -1,24 +1,13 @@
 
 modelName: Settings
 keyField: name
-keyName: AdminSettings
+keyName: Settings
 singleton: true
 fields:
   name:
     type: String
-    default: AdminSettings
+    default: Settings
     edit: false
   registrationOpen:
     type: Boolean
     default: true
-commands:
-  - name: Send User List
-    description: |
-      Sends a list of users to the specified address.
-    fields:
-      emailAddress:
-        type: EmailAddress
-    execute:
-      app: auth
-      service: LoginService
-      action: email-user-list

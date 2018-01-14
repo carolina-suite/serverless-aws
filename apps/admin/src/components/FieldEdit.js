@@ -1,6 +1,8 @@
 
 import React, { Component } from 'react';
 
+import FieldDisplay from './FieldDisplay';
+
 /**
 Props: schema, value
 */
@@ -10,6 +12,7 @@ class FieldEdit extends Component {
 
     super(props);
 
+    this.handleBoolean = this.handleBoolean.bind(this);
     this.handleChange = this.handleChange.bind(this);
   }
 
@@ -17,23 +20,32 @@ class FieldEdit extends Component {
     e.preventDefault();
     this.props.onChange(this.props.schema.name, e.target.value);
   }
+  handleBoolean(e) {
+    e.preventDefault();
+    this.props.onChange(this.props.schema.name, e.target.checked);
+  }
 
   render() {
 
     let inputHtml = '';
 
-    if (this.props.schema.type == 'Boolean') {
-      inputHtml = (
-        <label className="form-switch">
-          <input type="checkbox" checked={this.props.value} />
-        </label>
-      );
+    if (!this.props.isNew && !this.props.schema.edit) {
+      inputHtml = (<FieldDisplay field={this.props.schema} value={this.props.value} />)
     }
-    if (this.props.schema.type == 'EmailAddress') {
-      inputHtml = (<input className="form-input" type="text" required={this.props.schema.required} value={this.props.value} onChange={this.handleChange} />)
-    }
-    if (this.props.schema.type == 'String') {
-      inputHtml = (<input className="form-input" type="text" required={this.props.schema.required} value={this.props.value} onChange={this.handleChange} />)
+    else {
+      if (this.props.schema.type == 'Boolean') {
+        inputHtml = (
+          <label>
+            <input type="checkbox" checked={this.props.value} onChange={this.handleBoolean}/>
+          </label>
+        );
+      }
+      if (this.props.schema.type == 'EmailAddress') {
+        inputHtml = (<input className="form-input" type="text" required={this.props.schema.required} value={this.props.value} onChange={this.handleChange} />)
+      }
+      if (this.props.schema.type == 'String') {
+        inputHtml = (<input className="form-input" type="text" required={this.props.schema.required} value={this.props.value} onChange={this.handleChange} />)
+      }
     }
 
     return (
@@ -44,7 +56,7 @@ class FieldEdit extends Component {
         <div className="col-9">
           {inputHtml}
           {!!(this.props.schema.description) &&
-            <p>{this.props.schema.description}</p>
+            <p className="text-gray">{this.props.schema.description}</p>
           }
         </div>
       </div>

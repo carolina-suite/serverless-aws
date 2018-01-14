@@ -13,9 +13,11 @@ fields:
     verbose: Username
   password:
     type: String
+    edit: false
     secret: true
   salt:
     type: String
+    edit: false
     secret: true
   name:
     type: String
@@ -28,3 +30,15 @@ fields:
     default: false
     description: Gives full access to all site data to the user.
     verbose: Is Admin?
+commands:
+  - name: Set Password
+    description: |
+      Set the user's password to the provided value.
+    fields:
+      password:
+        type: String
+    execute:
+      app: auth
+      service: LoginService
+      args:
+        action: command-set-user-password

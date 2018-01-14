@@ -1,7 +1,9 @@
 
-* Settings System (Singletons)
 * Admin Application
-* App Settings Command Functions
+  * Basics
+  * Settings System (Singletons)
+  * Object View Command Functions
+  * App Settings Command Functions
 * Document Admin App
 * Cron Job Lamda Functions
 * Blog App

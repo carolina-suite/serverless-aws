@@ -46,3 +46,11 @@ things may happen in the admin app.
 The `adminFields` is optional but must a list of 1-4 fields that are
 defined. These are the fields that will be shown in the summary
 admin view.
+
+## Commands #
+
+You can list several commands in you schema. They look like this:
+
+```yml
+
+```

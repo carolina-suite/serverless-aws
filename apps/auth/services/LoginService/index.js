@@ -57,7 +57,7 @@ function check(token, cb) {
 }
 
 function emailUserList(emailAddress, cb) {
-  
+
 }
 
 function forgot(username, email, cb) {
@@ -180,44 +180,60 @@ function login(username, password, cb) {
 
 function register(username, password, emailAddress, cb) {
 
-  var modelServiceLookup = {
+  var settingsLookup = {
     action: 'lookup',
     app: 'auth',
-    model: 'User',
-    value: username
+    model: 'Settings',
+    value: 'Settings'
   };
-  C.invokeService('_carolina', 'ModelService', modelServiceLookup)
-  .then(function(data) {
-    if (data == null) {
+  C.invokeService('_carolina', 'ModelService', settingsLookup)
+  .then(function(s) {
 
-      var salt = crypto.randomBytes(32).toString('hex');
-      var saltedPass = crypto.pbkdf2Sync(password, salt,
-        1000, 64, 'sha512').toString('hex');
-      var modelServiceInsert = {
-        action: 'create',
-        app: 'auth',
-        model: 'User',
-        obj: {
-          username: username,
-          password: saltedPass,
-          salt: salt,
-          emailAddress: emailAddress,
-          isAdmin: false
-        }
-      };
+    if (!s.registrationOpen) {
+      cb("Registration is closed.");
+    }
+    var modelServiceLookup = {
+      action: 'lookup',
+      app: 'auth',
+      model: 'User',
+      value: username
+    };
+    C.invokeService('_carolina', 'ModelService', modelServiceLookup)
+    .then(function(data) {
+      if (data == null) {
 
-      return C.invokeService('_carolina', 'ModelService', modelServiceInsert);
-    }
-    else {
-      cb("Username exists.");
-    }
-  })
-  .then(function(data) {
-    if (data.hasOwnProperty('errorMessage')) {
-      cb(data.errorMessage);
-    }
-    else
-      cb(null, { success: true });
+        var salt = crypto.randomBytes(32).toString('hex');
+        var saltedPass = crypto.pbkdf2Sync(password, salt,
+          1000, 64, 'sha512').toString('hex');
+        var modelServiceInsert = {
+          action: 'create',
+          app: 'auth',
+          model: 'User',
+          obj: {
+            username: username,
+            password: saltedPass,
+            salt: salt,
+            emailAddress: emailAddress,
+            isAdmin: false
+          }
+        };
+
+        return C.invokeService('_carolina', 'ModelService', modelServiceInsert);
+      }
+      else {
+        cb("Username exists.");
+      }
+    })
+    .then(function(data) {
+      if (data.hasOwnProperty('errorMessage')) {
+        cb(data.errorMessage);
+      }
+      else
+        cb(null, { success: true });
+    })
+    .catch(function(err) {
+      cb(err);
+    });
   })
   .catch(function(err) {
     cb(err);
@@ -304,6 +320,40 @@ function updateProfile(token, info, cb) {
   });
 }
 
+function setUserPasswordCommand(username, password, cb) {
+  var modelServiceLookup = {
+    action: 'lookup',
+    app: 'auth',
+    model: 'User',
+    value: username
+  };
+  C.invokeService('_carolina', 'ModelService', modelServiceLookup)
+  .then(function(user) {
+
+    var newSalt = crypto.randomBytes(32).toString('hex');
+    user.salt = newSalt;
+    user.password = crypto.pbkdf2Sync(Buffer(password), Buffer(newSalt),
+      1000, 64, 'sha512').toString('hex');
+
+    var modelServiceUpsert = {
+      action: 'upsert',
+      app: 'auth',
+      model: 'User',
+      obj: user
+    };
+    C.invokeService('_carolina', 'ModelService', modelServiceUpsert)
+    .then(function(data) {
+      cb(null, { message: "Password updated." });
+    })
+    .catch(function(err) {
+      cb("Error updating password.");
+    });
+  })
+  .catch(function(err) {
+    cb(err);
+  });
+}
+
 exports.handler = function(event, context, callback) {
   if (!event.action) callback("No action specified.");
   switch(event.action) {
@@ -327,6 +377,9 @@ exports.handler = function(event, context, callback) {
       break;
     case 'update-profile':
       updateProfile(event.token, event.info, callback);
+      break;
+    case 'command-set-user-password':
+      setUserPasswordCommand(event.src.value, event.password, callback);
       break;
     default:
       callback("Invalid action provided.");

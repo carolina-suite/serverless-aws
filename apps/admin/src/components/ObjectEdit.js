@@ -3,6 +3,12 @@ import React, { Component } from 'react';
 
 import FieldEdit from './FieldEdit';
 
+import Auth from '../../../auth/src/lib/Auth';
+
+/**
+Component ObjectEdit
+Props: appName, modelName, isNew, schema, obj
+*/
 class ObjectEdit extends Component {
 
   constructor(props) {
@@ -35,21 +41,45 @@ class ObjectEdit extends Component {
     });
   }
   async handleSubmit(e) {
+
     e.preventDefault();
+
+    var params = {
+      action: 'create',
+      app: this.props.appName,
+      model: this.props.modelName,
+      obj: this.state.obj
+    };
+
+    if (!this.props.isNew) params.action = 'update';
+
+    var res = await Auth.callAPI('admin', 'api', params);
+
+    if (res.success) {
+      if (this.props.modelName == 'Settings') window.location.hash = `#/app/${this.props.appName}`;
+      else window.location.hash = `#/model/${this.props.appName}/${this.props.modelName}`;
+    }
+    else if (res.errorMessage) {
+      alert(res.errorMessage);
+    }
+    else {
+      alert("Unknown error.");
+    }
   }
 
   render() {
     return (
       <div>
+
         <form className="form-horizontal" onSubmit={this.handleSubmit}>
           {this.state.fields.map((f => (
-            <FieldEdit schema={this.props.schema.fields[f]} value={this.state.obj[f]}  onChange={this.handleChange}/>
+            <FieldEdit schema={this.props.schema.fields[f]} isNew={this.props.isNew} value={this.state.obj[f]}  onChange={this.handleChange} />
           )))}
           {!!(this.props.isNew) &&
-            <button className="btn btn-success">Add</button>
+            <button className="btn btn-success" onClick={this.handleSubmit}>Add</button>
           }
           {!(this.props.isNew) &&
-            <button className="btn btn-primary">Save</button>
+            <button className="btn btn-primary" onClick={this.handleSubmit}>Save</button>
           }
         </form>
       </div>

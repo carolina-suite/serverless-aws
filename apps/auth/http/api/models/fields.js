@@ -6,8 +6,11 @@ class Field {
     this.name = n;
     this.type = obj.type;
 
+    if (obj.hasOwnProperty('default')) this.default = obj.default;
     if (obj.hasOwnProperty('description')) this.description = obj.description;
     else this.description = '';
+    if (obj.hasOwnProperty('edit')) this.edit = obj.edit;
+    else this.edit = true;
     if (obj.hasOwnProperty('required')) this.required = obj.required;
     else this.required = false;
     if (obj.hasOwnProperty('secret')) this.secret = obj.secret;
@@ -26,6 +29,8 @@ class Field {
     return {
       name: this.name,
       type: this.type,
+      description: this.description,
+      edit: this.edit,
       required: this.required,
       secret: this.secret,
       unique: this.unique,
