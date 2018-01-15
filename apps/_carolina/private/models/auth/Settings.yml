@@ -1,13 +1,1 @@
-
-modelName: Settings
-keyField: name
-keyName: Settings
-singleton: true
-fields:
-  name:
-    type: String
-    default: Settings
-    edit: false
-  registrationOpen:
-    type: Boolean
-    default: true
+{"modelName":"Settings","keyField":"name","keyName":"Settings","singleton":true,"fields":{"name":{"type":"String","default":"Settings","edit":false},"registrationOpen":{"type":"Boolean","default":true}}}

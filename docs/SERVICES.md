@@ -91,3 +91,8 @@ respond with the data that is the result of the function (no need
 for `statusCode`, `header`, and `body`). These functions will not be accessible
 by HTTP and are intended only to be called by your HTTP functions or by
 other service functions themselves (don't do recursive calls tho).
+
+Service functions (but not HTTP methods) may be written in Python.
+If a `main.py` file exists, the service will be run in Python 3.6 and
+`main.py` will be expected to have a `handler(event, context)` function
+defined, which should return a dictionary or raise an Exception.

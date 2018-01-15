@@ -1,6 +1,9 @@
 
 import React, { Component } from 'react';
 
+import CodeMirror from 'react-codemirror';
+import Dropzone from 'react-dropzone';
+
 import FieldDisplay from './FieldDisplay';
 
 /**
@@ -12,8 +15,18 @@ class FieldEdit extends Component {
 
     super(props);
 
+    this.handleFileDrop = this.handleFileDrop.bind(this);
     this.handleBoolean = this.handleBoolean.bind(this);
     this.handleChange = this.handleChange.bind(this);
+  }
+
+  async getFileBase64(file) {
+    return new Promise(function(resolve, reject) {
+      let reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(';base64,')[1]);
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
   }
 
   handleChange(e) {
@@ -24,12 +37,23 @@ class FieldEdit extends Component {
     e.preventDefault();
     this.props.onChange(this.props.schema.name, e.target.checked);
   }
+  async handleFileDrop(files) {
+
+    var file = files[0];
+    var b64 = await this.getFileBase64(file);
+
+    this.props.onChange(this.props.schema.name, {
+      base64: b64,
+      fileName: file.name,
+      s3Key: this.props.value.s3Key
+    });
+  }
 
   render() {
 
     let inputHtml = '';
 
-    if (!this.props.isNew && !this.props.schema.edit) {
+    if ((!this.props.isNew && !this.props.schema.edit) || this.props.schema.type == 'Id') {
       inputHtml = (<FieldDisplay field={this.props.schema} value={this.props.value} />)
     }
     else {
@@ -40,11 +64,38 @@ class FieldEdit extends Component {
           </label>
         );
       }
+      if (this.props.schema.type == 'Code') {
+        inputHtml = (
+          <CodeMirror value={this.props.value} onChange={this.handleChange} options={{lineNumbers:true, mode:{name:this.props.schema.lang}}} />
+        )
+      }
       if (this.props.schema.type == 'EmailAddress') {
         inputHtml = (<input className="form-input" type="text" required={this.props.schema.required} value={this.props.value} onChange={this.handleChange} />)
       }
+      if (this.props.schema.type == 'File') {
+        inputHtml = (
+          <div>
+
+            <p>{this.props.value.fileName}</p>
+
+            <Dropzone onDrop={this.handleFileDrop} />
+          </div>
+        )
+      }
       if (this.props.schema.type == 'String') {
         inputHtml = (<input className="form-input" type="text" required={this.props.schema.required} value={this.props.value} onChange={this.handleChange} />)
+      }
+      if (this.props.schema.type == 'StringEnum') {
+        inputHtml = (
+          <select className="form-input" value={this.props.value} onChange={this.handleChange}>
+            {this.props.schema.choices.map((c) => (
+              <option value={c}>{c}</option>
+            ))}
+          </select>
+        )
+      }
+      if (this.props.schema.type == 'Text') {
+        inputHtml = (<textarea className="form-input" type="text" required={this.props.schema.required} value={this.props.value} onChange={this.handleChange} />)
       }
     }
 

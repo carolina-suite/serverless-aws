@@ -24,14 +24,40 @@ class FieldDisplay extends Component {
         )
       }
     }
+    if (this.props.field.type == 'Code' || this.props.field.type == 'Text') {
+      return (
+        <pre><code>{this.props.value}</code></pre>
+      )
+    }
     if (this.props.field.type == 'EmailAddress') {
       return (
         <a href={`mailto:${this.props.value}`}>{this.props.value}</a>
       )
     }
-    if (this.props.field.type == 'String') {
+    if (this.props.field.type == 'File') {
+      if (this.props.field.public) {
+        return (
+          <a href={`/${this.props.value.s3Key}`}>{this.props.value.fileName}</a>
+        )
+      }
+      else {
+        return (
+          <span>{this.props.value.fileName}</span>
+        )
+      }
+    }
+    if (this.props.field.type == 'Id' || this.props.field.type == 'StringEnum' || this.props.field.type == 'String') {
       return (
         <span>{this.props.value}</span>
+      )
+    }
+    if (this.props.field.type == 'StringList') {
+      return (
+        <ul>
+          {this.props.value.map((i) => (
+            <li>{i}</li>
+          ))}
+        </ul>
       )
     }
   }

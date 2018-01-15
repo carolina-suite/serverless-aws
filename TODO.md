@@ -1,7 +1,15 @@
 
-* Document Admin App
+* Rewrite ModelService in Python (to avoid blocking)
+* Make Fixtures go through ModelService
 * CTF App
+  * Determine endpoint name
+  * Models
+  * Seed Data
+  * Service(s)
+  * API
+  * View
 * Document Ctf App
+* Break CTF off into separate repository
 * Document `_carolina` App
 * Add to Carolina Suite
 

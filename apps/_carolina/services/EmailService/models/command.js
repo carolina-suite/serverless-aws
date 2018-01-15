@@ -10,7 +10,7 @@ class Command {
       this.description = schema.description;
     else this.description = schema.name;
 
-    this.fields = [];
+    this.fields = {};
     for (var prop in schema.fields) {
       this.fields[prop] = new Fields[`${schema.fields[prop].type}Field`](schema.fields[prop], prop);
     }
@@ -22,7 +22,8 @@ class Command {
     var o = {
       name: this.name,
       description: this.description,
-      execute: this.execute
+      execute: this.execute,
+      fields: {}
     };
 
     for (var prop in this.fields) {
@@ -32,3 +33,5 @@ class Command {
     return o;
   }
 }
+
+module.exports = Command;

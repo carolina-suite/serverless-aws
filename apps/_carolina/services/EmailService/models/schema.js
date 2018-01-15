@@ -7,8 +7,12 @@ class Schema {
   constructor(schema) {
 
     this.keyField = schema.keyField;
+
     this.singleton = false;
     if (schema.singleton) this.singleton = true;
+
+    this.description = '';
+    if (schema.description) this.description = schema.description;
 
     if (schema.adminFields) {
       this.adminFields = schema.adminFields;

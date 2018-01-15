@@ -391,8 +391,14 @@ class CarolinaLib {
     for (var i = 0; i < this.allApps.length; ++i) {
       var appName = this.allApps[i];
       if (fs.existsSync(`apps/${appName}/models`)) {
-        fs.copySync(`apps/${appName}/models`,
-          `apps/_carolina/private/models/${appName}`);
+        var modelDefinitions = fs.readdirSync(`apps/${appName}/models`);
+        for (var j = 0; j < modelDefinitions.length; ++j) {
+          var modelDef = yaml.load(`apps/${appName}/models/${modelDefinitions[j]}`);
+          fs.ensureDirSync(`apps/_carolina/private/models/${appName}`);
+          fs.writeFileSync(`apps/_carolina/private/models/${appName}/${modelDefinitions[j]}`,
+            JSON.stringify(modelDef));
+          console.log(`Generated JSON schema for model ${appName}/${modelDefinitions[j]}.`);
+        }
       }
     }
   }
@@ -524,6 +530,7 @@ class CarolinaLib {
         },
         Environment: {
           Variables: {
+            awsRegion: self.config.awsRegion,
             privateBucket: self.privateBucketName,
             siteSuffix: self.state.siteSuffix,
             slug: self.config.slug,
@@ -624,6 +631,7 @@ class CarolinaLib {
         },
         Environment: {
           Variables: {
+            awsRegion: self.config.awsRegion,
             privateBucket: self.privateBucketName,
             siteSuffix: self.state.siteSuffix,
             slug: self.config.slug,
@@ -636,6 +644,13 @@ class CarolinaLib {
         Runtime: 'nodejs6.10',
         Timeout: 60
       };
+
+      // convert to python if it has a main.py
+      if (fs.existsSync(`apps/${app}/services/${serviceName}/main.py`)) {
+        params.Handler = 'main.handler'
+        params.Runtime = 'python3.6'
+      }
+
       self.Lambda.createFunction(params, function(err, data) {
         if (err) reject(err);
         else {

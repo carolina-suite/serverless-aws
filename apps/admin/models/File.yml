@@ -1,0 +1,14 @@
+
+modelName: Challenge
+keyField: fileId
+adminFields:
+  - fileId
+  - file
+fields:
+  fileId:
+    type: Id
+    verbose: ID
+  file:
+    type: File
+    public: true
+    verbose: File
