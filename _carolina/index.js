@@ -119,6 +119,21 @@ class CarolinaLib {
 
     return new Promise(function(resolve, reject) {
 
+      var command = {
+        action: 'upsert',
+        app: item.model.app,
+        model: item.model.model,
+        obj: item.fields
+      }
+      var params = {
+        FunctionName: `${self.config.slug}_${self.state.siteSuffix}_svc__carolina_ModelService`,
+        Payload: JSON.stringify(command)
+      };
+      self.Lambda.invoke(params, function(err, data) {
+        if (err) reject(err);
+        else resolve(data);
+      });
+      /**
       var model = yaml.load(`apps/${item.model.app}/models/${item.model.model}.yml`);
       var schema = new Schema(model);
       var itemParam = {};
@@ -135,6 +150,7 @@ class CarolinaLib {
         if (err) reject(err);
         else resolve(data);
       });
+      **/
     });
   }
 

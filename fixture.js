@@ -12,7 +12,7 @@ async function loadFixtures(fixtures) {
   fixtures.map(async function(fixture) {
     var fixtureData = require(`./.fixtures/${fixture}`);
     fixtureData.map(async function(item) {
-      await Carolina.putFixtureItem(item);
+      var res = await Carolina.putFixtureItem(item);
     });
   });
 }

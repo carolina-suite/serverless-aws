@@ -170,7 +170,7 @@ def handler(event, context):
     # querying is not yet supported
     return query(event['app'], event['model'], event['query'])
   elif event['action'] == 'upsert':
-    return upsert_object(event['app'], event['model'], event['query'])
+    return upsert_object(event['app'], event['model'], event['obj'])
   elif event['action'] == 'delete':
     return delete_object(event['app'], event['model'], event['value'])
   else:

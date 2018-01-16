@@ -1,5 +1,4 @@
 
-* Rewrite ModelService in Python (to avoid blocking)
 * Make Fixtures go through ModelService
 * CTF App
   * Determine endpoint name

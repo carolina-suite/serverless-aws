@@ -42,7 +42,10 @@ class Field {
 class StringField extends Field {
 
   constructor(obj, n) {
+
     super(obj, n);
+
+
   }
 
   toAttributeDefinition() {
@@ -56,6 +59,31 @@ class StringField extends Field {
   }
 };
 
+class IdField extends StringField {
+  constructor(obj, n) {
+
+    super(obj, n);
+  }
+}
+
+class StringEnumField extends StringField {
+
+  constructor(obj, n) {
+
+    super(obj, n);
+    if (!obj.hasOwnProperty('default')) {
+      this.default = obj.choices[i];
+    }
+  }
+
+  toJSON() {
+    var j = super.toJSON();
+    j.choices = this.choices;
+    return j;
+  }
+
+}
+
 class EmailAddressField extends StringField {
 
   constructor(obj, n) {
@@ -64,6 +92,45 @@ class EmailAddressField extends StringField {
 
   toInsertObj(v) {
     return { S: String(v) };
+  }
+}
+
+class RegularExpressionField extends StringField {
+  constructor(obj, n) {
+    super(obj, n);
+  }
+}
+
+class TextField extends StringField {
+  constructor(obj, n) {
+    super(obj, n);
+  }
+}
+
+class FileField extends StringField {
+  constructor(obj, n) {
+    super(obj, n);
+  }
+}
+
+class CodeField extends TextField {
+
+  constructor(obj, n) {
+
+    super(obj, n);
+
+    if (obj.hasOwnProperty('lang')) {
+      this.lang = obj.lang;
+    }
+    else {
+      this.lang = 'text';
+    }
+  }
+
+  toJSON() {
+    var j = super.toJSON();
+    j.lang = this.lang;
+    return j;
   }
 }
 
@@ -87,6 +154,132 @@ class BooleanField extends Field {
   }
 }
 
-this.StringField = StringField;
-this.EmailAddressField = EmailAddressField;
+class NumberField extends Field {
+
+  constructor(obj, n) {
+    super(obj, n);
+  }
+
+  toAttributeDefinition() {
+    return {
+      AttributeName: this.name,
+      AttributeType: 'N'
+    }
+  }
+
+  toInsertObj(v) {
+    return { N: String(v) }
+  }
+  fromDB(o) {
+    return Number(o['N']);
+  }
+}
+
+class IntegerField extends Field {
+
+  constructor(obj, n) {
+    super(obj, n);
+  }
+
+  fromDB(o) {
+    return parseInt(o['N']);
+  }
+}
+
+class ListField extends Field {
+
+  constructor(obj,n, SubtypeClass) {
+    super(obj, n)
+    this.subtypeClass = new SubtypeClass(obj.subSchema, 'item');
+    if (obj.hasOwnProperty('limit')) this.limit = obj.limit;
+    else this.limit = 0;
+  }
+
+  toJSON() {
+    j = super.toJSON();
+    j.limit = this.limit;
+    j.subtypeClass = this.subtypeClass.toJSON();
+    return j;
+  }
+
+  toAttributeDefinition() {
+    return {
+      AttributeName: this.name,
+      AttributeType: 'L'
+    }
+  }
+  toInsertObj(v) {
+    return { 'L': v };
+  }
+  fromDB(o) {
+    return o['L'];
+  }
+}
+
+class FileListField extends ListField {
+  constructor(obj, n) {
+    super(obj, n, FileField);
+  }
+}
+
+class StringListField extends ListField {
+
+  constructor(obj, n) {
+    super(obj, n, StringField);
+  }
+
+  toAttributeDefinition() {
+    return {
+      AttributeName: this.name,
+      AttributeType: 'SS'
+    }
+  }
+
+  toInsertObj(vs) {
+
+    var v = [];
+
+    for (var i = 0; i < vs.length; ++i) {
+      v.push(String(vs[i]));
+    }
+
+    return { 'SS': v };
+  }
+  fromDB(o) {
+    return o['SS'];
+  }
+}
+
+function getFieldClass(name) {
+  switch(name) {
+    case 'Boolean':
+      return BooleanClass;
+    case 'Code':
+      return CodeClass;
+    case 'EmailAddress':
+      return EmailAddressField;
+    case 'ListField':
+      return ListField;
+    case 'StringEnum':
+      return StringEnumField;
+    case 'String':
+      return StringField;
+    case 'StringList':
+      return StringListField;
+    case 'TextField':
+      return TextField;
+    default:
+      return StringField;
+  }
+}
+
 this.BooleanField = BooleanField;
+this.CodeField = CodeField;
+this.EmailAddressField = EmailAddressField;
+this.FileField = FileField;
+this.IdField = IdField;
+this.ListField = ListField;
+this.StringEnumField = StringEnumField;
+this.StringField = StringField;
+this.StringListField = StringListField;
+this.TextField = TextField;

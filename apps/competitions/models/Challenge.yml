@@ -78,8 +78,8 @@ fields:
     min: 0
     verbose: Points
   dataFile:
-    type: Ref
-    ref:
-      app: admin
-      model: File
+    type: File
+    description: |
+      If more than one file should be referenced by this challenge,
+      please ZIP them up.
     verbose: Data File
