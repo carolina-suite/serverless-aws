@@ -263,6 +263,8 @@ FIELDS = {
   'EmailAddress': EmailAddressField,
   'File': FileField,
   'Id': IdField,
+  'List': ListField,
+  'RegularExpression': RegularExpressionField,
   'StringEnum': StringEnumField,
   'String': StringField,
   'Text': TextField

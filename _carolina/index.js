@@ -77,24 +77,29 @@ class CarolinaLib {
       if (fs.existsSync(`apps/${appName}/models`)) {
         walk(`apps/${appName}/models`).map(async function(fpath) {
 
-          var modelName = fpath.split(`apps/${appName}/models/`)[1].split('.yml')[0];
-          if (self.state.createdTables.indexOf(`${appName}_${modelName}`) != -1) { return null; }
+          try {
+            var modelName = fpath.split(`apps/${appName}/models/`)[1].split('.yml')[0];
+            if (self.state.createdTables.indexOf(`${appName}_${modelName}`) != -1) { return null; }
 
-          var tableName = `${self.config.slug}_${self.state.siteSuffix}_${appName}_${modelName}`;
-          var modelConfig = yaml.load(fpath);
-          var modelSchema = new Schema(modelConfig);
-          var params = {
-            TableName: tableName,
-            KeySchema: modelSchema.toKeySchema(),
-            AttributeDefinitions: modelSchema.toAttributeDefinitions(),
-            ProvisionedThroughput: {
-              ReadCapacityUnits: 10,
-              WriteCapacityUnits: 10
-            }
-          };
+            var tableName = `${self.config.slug}_${self.state.siteSuffix}_${appName}_${modelName}`;
+            var modelConfig = yaml.load(fpath);
+            var modelSchema = new Schema(modelConfig);
+            var params = {
+              TableName: tableName,
+              KeySchema: modelSchema.toKeySchema(),
+              AttributeDefinitions: modelSchema.toAttributeDefinitions(),
+              ProvisionedThroughput: {
+                ReadCapacityUnits: 10,
+                WriteCapacityUnits: 10
+              }
+            };
 
-          await self.createTable(params);
-          self.state.createdTables.push(`${appName}_${modelName}`);
+            await self.createTable(params);
+            self.state.createdTables.push(`${appName}_${modelName}`);
+          }
+          catch(err) {
+            console.log(err);
+          }
         });
       }
     }

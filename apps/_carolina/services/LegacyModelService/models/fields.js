@@ -188,17 +188,17 @@ class IntegerField extends Field {
 
 class ListField extends Field {
 
-  constructor(obj,n, SubtypeClass) {
+  constructor(obj,n) {
     super(obj, n)
-    this.subtypeClass = new SubtypeClass(obj.subSchema, 'item');
     if (obj.hasOwnProperty('limit')) this.limit = obj.limit;
     else this.limit = 0;
+    this.subSchema = obj.subSchema;
   }
 
   toJSON() {
     j = super.toJSON();
     j.limit = this.limit;
-    j.subtypeClass = this.subtypeClass.toJSON();
+    j.subSchema = this.subSchema;
     return j;
   }
 
@@ -278,7 +278,10 @@ this.CodeField = CodeField;
 this.EmailAddressField = EmailAddressField;
 this.FileField = FileField;
 this.IdField = IdField;
+this.IntegerField = IntegerField;
 this.ListField = ListField;
+this.NumberField = NumberField;
+this.RegularExpressionField = RegularExpressionField;
 this.StringEnumField = StringEnumField;
 this.StringField = StringField;
 this.StringListField = StringListField;

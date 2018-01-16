@@ -26,6 +26,7 @@ module.exports = {
 
   apps: [
     'admin',
-    'auth'
+    'auth',
+    'competitions'
   ]
 };

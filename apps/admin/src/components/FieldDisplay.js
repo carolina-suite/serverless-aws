@@ -46,16 +46,23 @@ class FieldDisplay extends Component {
         )
       }
     }
-    if (this.props.field.type == 'Id' || this.props.field.type == 'StringEnum' || this.props.field.type == 'String') {
+    if (this.props.field.type == 'Id' || this.props.field.type == 'RegularExpression') {
+      return (
+        <span><tt>{this.props.value}</tt></span>
+      )
+    }
+    if (this.props.field.type == 'StringEnum' || this.props.field.type == 'String') {
       return (
         <span>{this.props.value}</span>
       )
     }
-    if (this.props.field.type == 'StringList') {
+    if (this.props.field.type == 'List') {
       return (
         <ul>
           {this.props.value.map((i) => (
-            <li>{i}</li>
+            <li>
+              <FieldDisplay field={this.props.field.subSchema} value={i} />
+            </li>
           ))}
         </ul>
       )

@@ -1,5 +1,4 @@
 
-* Make Fixtures go through ModelService
 * CTF App
   * Determine endpoint name
   * Models

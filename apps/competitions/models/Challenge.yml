@@ -20,7 +20,7 @@ fields:
       - Draft
       - Experimental
       - Published
-   default: Draft
+    default: Draft
   question:
     type: Code
     lang: markdown

@@ -99,7 +99,7 @@ class ObjectEdit extends Component {
 
         <form className="form-horizontal" onSubmit={this.handleSubmit}>
           {this.state.fields.map((f => (
-            <FieldEdit schema={this.props.schema.fields[f]} isNew={this.props.isNew} value={this.state.obj[f]}  onChange={this.handleChange} />
+            <FieldEdit schema={this.props.schema.fields[f]} name={this.props.schema.fields[f].name} isNew={this.props.isNew} value={this.state.obj[f]}  onChange={this.handleChange} />
           )))}
           {!!(this.props.isNew) &&
             <button className="btn btn-success" onClick={this.handleSubmit}>Add</button>

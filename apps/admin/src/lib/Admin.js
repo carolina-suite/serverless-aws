@@ -20,6 +20,9 @@ class AdminLib {
         if (s.fields[property].type == 'EmailAddress') {
           starterObject[property] = '';
         }
+        if (s.fields[property].type == 'Integer' || s.fields[property].type == 'Number') {
+          starterObject[property] = 0;
+        }
         if (s.fields[property].type == 'String') {
           starterObject[property] = '';
         }
