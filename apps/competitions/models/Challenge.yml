@@ -55,7 +55,7 @@ fields:
     description: This is used for "Multiple Choice" solutions.
     subSchema:
       type: String
-      verbose: Option {n}
+      verbose: Option
     verbose: Multiple Choice
     limit: 10
   solutionRegex:

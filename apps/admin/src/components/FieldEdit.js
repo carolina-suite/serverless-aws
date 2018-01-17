@@ -8,6 +8,8 @@ import FieldDisplay from './FieldDisplay';
 
 import Admin from '../lib/Admin';
 
+require('codemirror/mode/markdown/markdown');
+
 /**
 Props: schema, name, value
 */
@@ -19,11 +21,14 @@ class FieldEdit extends Component {
 
     this.handleBoolean = this.handleBoolean.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleCode = this.handleCode.bind(this);
     this.handleFileDrop = this.handleFileDrop.bind(this);
     this.handleListAppend = this.handleListAppend.bind(this);
     this.handleListConfirm = this.handleListConfirm.bind(this);
+    this.handleListDown = this.handleListDown.bind(this);
     this.handleListItem = this.handleListItem.bind(this);
     this.handleListRemove = this.handleListRemove.bind(this);
+    this.handleListUp = this.handleListUp.bind(this);
 
     this.state = {
       value: this.props.value
@@ -40,12 +45,13 @@ class FieldEdit extends Component {
   }
 
   handleChange(e) {
-    e.preventDefault();
     this.props.onChange(this.props.name, e.target.value);
   }
   handleBoolean(e) {
-    e.preventDefault();
     this.props.onChange(this.props.name, e.target.checked);
+  }
+  handleCode(newValue) {
+    this.props.onChange(this.props.name, newValue);
   }
   async handleFileDrop(files) {
 
@@ -59,13 +65,21 @@ class FieldEdit extends Component {
     });
   }
   handleListItem(indexString, v) {
-    this.state.value[parseInt(indexString)] = v;
+    var value = this.state.value;
+    value[parseInt(indexString)] = v;
+    this.setState({
+      value: value
+    });
   }
-  handleListAppend() {
+  handleListAppend(e) {
+
+    e.preventDefault();
+
+    console.log(this.state.value);
 
     var starterObject = Admin.getStarterObjectFromSchema({
       fields: {
-        fieldName: this.props.schema
+        fieldName: this.props.schema.subSchema
       }
     });
     var value = this.state.value;
@@ -76,9 +90,46 @@ class FieldEdit extends Component {
     });
   }
   handleListRemove(e) {
+
+    e.preventDefault();
     var index = parseInt(e.target.name);
+
+    var value = this.state.value;
+    value.splice(index, 1);
+    this.setState({
+      value: value
+    });
   }
-  handleListConfirm() {
+  handleListUp(e) {
+
+    e.preventDefault();
+    var index = parseInt(e.target.name)
+
+    var value = this.state.value;
+    var temp = value[index];
+    value[index] = value[index - 1];
+    value[index - 1] = temp;
+    this.setState({
+      value: value
+    });
+  }
+  handleListDown(e) {
+
+    e.preventDefault();
+    var index = parseInt(e.target.name)
+
+    var value = this.state.value;
+    var temp = value[index];
+    value[index] = value[index + 1];
+    value[index + 1] = temp;
+    this.setState({
+      value: value
+    });
+  }
+  handleListConfirm(e) {
+
+    e.preventDefault();
+
     this.props.onChange(this.props.name, this.state.value);
   }
 
@@ -99,7 +150,7 @@ class FieldEdit extends Component {
       }
       if (this.props.schema.type == 'Code') {
         inputHtml = (
-          <CodeMirror value={this.props.value} onChange={this.handleChange} options={{lineNumbers:true, mode:{name:this.props.schema.lang}}} />
+          <CodeMirror value={this.props.value} onChange={this.handleCode} options={{lineNumbers:true, mode:{name:this.props.schema.lang}}} />
         )
       }
       if (this.props.schema.type == 'EmailAddress') {
@@ -111,7 +162,9 @@ class FieldEdit extends Component {
 
             <p>{this.props.value.fileName}</p>
 
-            <Dropzone onDrop={this.handleFileDrop} />
+            <Dropzone onDrop={this.handleFileDrop}>
+              <p>Drag a file here.</p>
+            </Dropzone>
           </div>
         )
       }
@@ -121,9 +174,24 @@ class FieldEdit extends Component {
       if (this.props.schema.type == 'Number') {
         inputHtml = (<input className="form-input" type="number" min={this.props.schema.min} max={this.props.schema.max} value={this.props.value} onChange={this.handleChange} />)
       }
+      if (this.props.schema.type == 'Ref') {
+        inputHtml =(
+          <div>
+
+            <p>If you know the key value (usually the ID) of the {this.pros.schema.ref.app}_{this.props.schema.ref.model} you want, enter it here:</p>
+
+            <input className="form-input" type="text" required={this.props.schema.required} value={this.props.value} onChange={this.handleChange} />
+
+            <button className="btn-primary">
+              <i className="icon icon-search"></i>Lookup Tool
+            </button>
+          </div>
+        )
+      }
       if (this.props.schema.type == 'RegularExpression' || this.props.schema.type == 'String') {
         inputHtml = (<input className="form-input" type="text" required={this.props.schema.required} value={this.props.value} onChange={this.handleChange} />)
       }
+
       if (this.props.schema.type == 'StringEnum') {
         inputHtml = (
           <select className="form-input" value={this.props.value} onChange={this.handleChange}>
@@ -140,7 +208,7 @@ class FieldEdit extends Component {
         inputHtml = (
           <div>
 
-            {this.state.value.map((i, index) =>(
+            {this.state.value.map((i, index, arr) =>(
               <div>
 
                 <FieldEdit name={`${index}`} schema={this.props.schema.subSchema} value={i} onChange={this.handleListItem} />
@@ -148,6 +216,17 @@ class FieldEdit extends Component {
                 <button className="btn btn-error" name={`${index}`} onClick={this.handleListRemove}>
                   <i className="icon icon-cross"></i> Remove
                 </button>
+
+                {(index != 0) &&
+                  <button className="btn" name={`${index}`} onClick={this.handleListUp}>
+                    <i className="icon icon-upward"></i> Move Up
+                  </button>
+                }
+                {(index < arr.length-1) &&
+                  <button className="btn" name={`${index}`} onClick={this.handleListDown}>
+                    <i className="icon icon-downward"></i> Move Down
+                  </button>
+                }
 
                 <hr />
               </div>

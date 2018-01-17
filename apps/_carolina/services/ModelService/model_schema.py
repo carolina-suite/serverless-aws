@@ -124,6 +124,24 @@ class CodeField(TextField):
     j['lang'] = self.lang
     return j
 
+class JsonField(CodeField):
+
+  def __init__(self, obj, n):
+    obj['lang'] = 'json'
+    super(JsonField, self).__init__(obj, n)
+
+  def to_insert_obj(self, v):
+    return { 'S': json.dumps(v) }
+  def from_db(self, o):
+    return json.loads(o['S'])
+
+class DateField(String):
+
+  def __init__(self, obj, n):
+    super(DateField, self).__init__(obj, n)
+    if 'default' not in obj:
+      self.default = datetime.datetime.now().strftime('%Y-%m-%d')
+
 class BooleanField(Field):
 
   def __init__(self, obj, n):
@@ -252,10 +270,34 @@ class RefField(StringField):
     return super(RefField, self).to_insert_obj(v['refId'])
 
   def from_db(self, o):
+
     import main
+    lookup_value = main.lookup(self.ref['app'], self.ref['model'], o['S'])
 
-    return main.lookup(self.ref['app'], self.ref['model'], o)
+    return {
+      'obj': lookup_value,
+      'refId': o['S']
+    }
 
+class ListField(Field):
+
+  def __init__(self, obj, n):
+    super(ListField, self).__init__(obj, n)
+    if 'default' not in obj:
+      self.default = []
+    self.sub_schema = FIELDS[obj['subSchema']['type']](obj['subSchema'], 'item');
+
+  def to_dict(self):
+    j = super(ListField, self).to_dict()
+    j['subSchema'] = self.sub_schema.to_dict()
+    return j
+
+  def to_insert_obj(self, v):
+    insert_obj = [self.sub_schema.to_insert_obj(item) for item in v]
+    return { 'L': insert_obj }
+
+  def from_db(self, o):
+    return [self.sub_schema.from_db(item) for item in o['L']]
 
 FIELDS = {
   'Boolean': BooleanField,
@@ -263,7 +305,11 @@ FIELDS = {
   'EmailAddress': EmailAddressField,
   'File': FileField,
   'Id': IdField,
+  'Integer': IntegerField,
+  'Json': JsonField,
   'List': ListField,
+  'Number': NumberField,
+  'Ref': RefField,
   'RegularExpression': RegularExpressionField,
   'StringEnum': StringEnumField,
   'String': StringField,
@@ -376,7 +422,8 @@ class Schema:
 
     for prop in self.fields:
       if prop in obj:
-        insert[prop] = self.fields[prop].to_insert_obj(obj[prop])
+        if obj[prop]:
+          insert[prop] = self.fields[prop].to_insert_obj(obj[prop])
       elif hasattr(self.fields[prop], 'default'):
         insert[prop] = self.fields[prop].to_insert_obj(self.fields[prop].default)
 

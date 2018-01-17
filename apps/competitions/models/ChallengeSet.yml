@@ -1,0 +1,26 @@
+
+modelName: ChallengeSet
+keyField: challengeSetId
+adminFields:
+  - challengeSetId
+  - name
+fields:
+  challengeSetId:
+    type: Id
+    verbose: ID
+  name:
+    type: String
+    verbose: Name
+  description:
+    type: Code
+    lang: markdown
+    verbose: Description
+  challenges:
+    type: List
+    subSchema:
+      type: Ref
+      ref:
+        app: competitions
+        model: Challenge
+      verbose: Challenge
+    verbose: Challenges

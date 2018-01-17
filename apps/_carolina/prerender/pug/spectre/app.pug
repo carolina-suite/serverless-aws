@@ -1,5 +1,9 @@
 extends ./base.pug
 
+block append css
+  if (localData.cssFiles)
+    each cssFile in localData.cssFiles
+      link(href=cssFile rel="stylesheet")
 block body
   
   include ./navbar.pug

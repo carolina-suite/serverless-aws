@@ -1,13 +1,18 @@
 
 var Fields = require('./fields');
+var Command = require('./command');
 
 class Schema {
 
   constructor(schema) {
 
     this.keyField = schema.keyField;
+
     this.singleton = false;
     if (schema.singleton) this.singleton = true;
+
+    this.description = '';
+    if (schema.description) this.description = schema.description;
 
     if (schema.adminFields) {
       this.adminFields = schema.adminFields;
@@ -23,6 +28,13 @@ class Schema {
     this.fields[this.keyField].edit = false;
     this.fields[this.keyField].required = true;
     this.fields[this.keyField].unique = true;
+
+    this.commands = [];
+    if (schema.hasOwnProperty('commands')) {
+      for (var i = 0; i < schema.commands.length; ++i) {
+        this.commands.push(new Command(schema.commands[i]));
+      }
+    }
   }
 
   getLookupKey(v) {
@@ -76,12 +88,17 @@ class Schema {
       keyField: this.keyField,
       adminFields: this.adminFields,
       singleton: this.singleton,
-      fields: {}
+      fields: {},
+      commands: []
     };
 
     for (var prop in this.fields) {
       o.fields[prop] = this.fields[prop].toJSON()
     };
+
+    for (var i = 0; i < this.commands.length; ++i) {
+      o.commands.push(this.commands[i].toJSON());
+    }
 
     return o;
   }
