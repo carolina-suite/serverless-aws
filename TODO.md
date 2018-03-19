@@ -1,15 +1,7 @@
 
-* CTF App
-  * Determine endpoint name
-  * Models
-  * Seed Data
-  * Service(s)
-  * API
-  * View
-* Document Ctf App
-* Break CTF off into separate repository
+* Functionality Check
 * Document `_carolina` App
-* Add to Carolina Suite
+* Add to Carolina Suite or create new REPO
 
 ## App Process #
 
